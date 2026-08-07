@@ -4,7 +4,9 @@ Jogo de terror em texto. Você acorda no quarto de infância — a casa está va
 
 ## Versão 8-bit dark (navegador)
 
-Interface visual inspirada em UI pixel (boxes, scanlines, Press Start 2P / VT323), com pegada **noir dark** da história — **sem alterar** outros projetos.
+Interface visual inspirada em UI pixel (boxes, scanlines, Press Start 2P / VT323), com pegada **noir dark** da história.
+
+**Online:** (após deploy Vercel) · **Repo:** https://github.com/hzy1kk/casa-que-lembra
 
 ```bash
 cd web
@@ -14,6 +16,14 @@ python3 -m http.server 8080
 Abra http://localhost:8080
 
 Arquivos: [`web/index.html`](web/index.html) · [`web/styles.css`](web/styles.css) · [`web/game.js`](web/game.js) · [`web/art/`](web/art/)
+
+### Deploy Vercel
+
+O site estático sai da pasta `web/` (`vercel.json`). Importar o repo no [Vercel](https://vercel.com/new) ou:
+
+```bash
+npx vercel --prod
+```
 
 ## Terminal (Python)
 
