@@ -4,7 +4,7 @@ Jogo de terror em texto. Você acorda no quarto de infância — a casa está va
 
 ## Versão 8-bit dark (navegador)
 
-Interface visual inspirada em UI pixel (boxes, scanlines, Press Start 2P / VT323), com pegada **noir dark** da história.
+Interface cinematográfica dark (sangue, cinza, ferrugem), texto datilografado, som procedural e uma arte por fase/escolha.
 
 **Online:** (após deploy Vercel) · **Repo:** https://github.com/hzy1kk/casa-que-lembra
 
@@ -17,7 +17,9 @@ Abra http://localhost:8080
 
 Arquivos: [`web/index.html`](web/index.html) · [`web/styles.css`](web/styles.css) · [`web/game.js`](web/game.js) · [`web/art/`](web/art/)
 
-Cada **fase** (quarto, corredor, cozinha, sala, sótão, porão, espelho e os 6 finais) tem ilustração própria. Cada **escolha** mostra uma miniatura; passar o mouse (ou focar com teclado) troca a arte principal para o momento daquela opção.
+Cada **fase** tem ilustração própria. Cada **escolha** mostra miniatura (hover troca a arte). O texto entra letra a letra (clique ou espaço adianta). Há drone, passos atrasados e batimento quando a vida cai.
+
+Botão **som / mudo** no canto.
 
 ### Deploy Vercel
 

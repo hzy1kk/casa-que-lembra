@@ -1,6 +1,15 @@
-/* A Casa que Lembra — engine web 8-bit */
+/* A Casa que Lembra — engine web */
 
 const MAX_TURNOS = 15;
+const REDUCE_MOTION = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+const ITEM_NOME = {
+  fosforos: "fósforos",
+  chave_enferrujada: "chave enferrujada",
+  fita_cassete: "fita cassete",
+  vela: "vela",
+  foto_rasgada: "foto rasgada",
+};
 
 const SCENE_ART = {
   inicio: "art/scene-inicio.jpg",
@@ -61,7 +70,9 @@ const el = {
   choices: document.getElementById("choices"),
   inv: document.getElementById("inv"),
   vida: document.getElementById("stat-vida"),
+  vidaWrap: document.getElementById("stat-vida-wrap"),
   turnos: document.getElementById("stat-turnos"),
+  turnBar: document.getElementById("turn-bar"),
   sceneImg: document.getElementById("scene-img"),
   stageArt: document.getElementById("stage-art"),
   sceneLoc: document.getElementById("scene-loc"),
@@ -69,10 +80,24 @@ const el = {
   bootBar: document.getElementById("boot-bar"),
   bootLine: document.getElementById("boot-line"),
   btnStart: document.getElementById("btn-start"),
+  btnMute: document.getElementById("btn-mute"),
+  skipHint: document.getElementById("skip-hint"),
+  fade: document.getElementById("fx-fade"),
 };
 
+let skipType = false;
+let typing = false;
+
+function sleep(ms) {
+  return new Promise((resolve) => window.setTimeout(resolve, ms));
+}
+
 function pegar(item) {
-  if (!state.inv.includes(item)) state.inv.push(item);
+  if (!state.inv.includes(item)) {
+    state.inv.push(item);
+    if (window.AudioFx) AudioFx.item();
+    atualizarHud();
+  }
 }
 
 function tem(item) {
@@ -81,6 +106,12 @@ function tem(item) {
 
 function perderVida(n = 1) {
   state.vida -= n;
+  document.body.classList.remove("is-hurt");
+  void document.body.offsetWidth;
+  document.body.classList.add("is-hurt");
+  window.setTimeout(() => document.body.classList.remove("is-hurt"), 450);
+  if (window.AudioFx) AudioFx.hurt();
+  atualizarHud();
   return state.vida <= 0;
 }
 
@@ -88,8 +119,29 @@ function atualizarHud() {
   const hearts = "♥".repeat(Math.max(0, state.vida)) + "♡".repeat(Math.max(0, 3 - state.vida));
   el.vida.textContent = hearts || "—";
   el.vida.setAttribute("aria-label", `${state.vida} de vida`);
+  if (el.vidaWrap) el.vidaWrap.dataset.low = state.vida <= 1 ? "1" : "0";
   el.turnos.textContent = `${state.turnos}/${MAX_TURNOS}`;
-  el.inv.textContent = state.inv.length ? state.inv.join(", ") : "nada";
+  document.body.dataset.hp = String(Math.max(0, state.vida));
+  if (el.turnBar) {
+    el.turnBar.style.width = `${(state.turnos / MAX_TURNOS) * 100}%`;
+    el.turnBar.parentElement.classList.toggle("is-late", state.turnos >= 12);
+  }
+  if (window.AudioFx) AudioFx.heartbeat(state.vida === 1);
+  if (!el.inv) return;
+  el.inv.innerHTML = "";
+  if (!state.inv.length) {
+    const empty = document.createElement("span");
+    empty.className = "inv-empty";
+    empty.textContent = "nada";
+    el.inv.appendChild(empty);
+    return;
+  }
+  state.inv.forEach((id) => {
+    const chip = document.createElement("span");
+    chip.className = "inv-chip";
+    chip.textContent = ITEM_NOME[id] || id;
+    el.inv.appendChild(chip);
+  });
 }
 
 function showArt(src, cena) {
@@ -100,20 +152,72 @@ function showArt(src, cena) {
   if (cena && el.sceneLoc) el.sceneLoc.textContent = SCENE_LABEL[cena] || cena.toUpperCase();
 }
 
-function setArt(cena) {
+async function setArt(cena) {
   const src = SCENE_ART[cena] || SCENE_ART.inicio;
+  const changed = currentSceneArt !== src || (el.stageArt && el.stageArt.dataset.scene !== cena);
+  if (changed && el.stageArt) {
+    el.stageArt.classList.add("is-fade");
+    if (!REDUCE_MOTION) await sleep(160);
+  }
   currentSceneArt = src;
   showArt(src, cena);
+  document.body.dataset.scene = cena;
+  const ending = typeof FINAIS !== "undefined" && FINAIS.has(cena);
+  document.body.classList.toggle("is-ending", ending);
+  if (ending) document.body.dataset.ending = cena.replace("fim_", "");
+  else delete document.body.dataset.ending;
+  if (el.stageArt) {
+    el.stageArt.classList.remove("is-fade");
+    el.stageArt.classList.remove("is-live");
+    void el.stageArt.offsetWidth;
+    el.stageArt.classList.add("is-live");
+  }
+  if (window.AudioFx) AudioFx.room(cena);
 }
 
-function narrar(paragrafos, cls) {
+async function typeLine(node, text) {
+  if (REDUCE_MOTION) {
+    node.textContent = text;
+    return;
+  }
+  node.textContent = "";
+  for (let i = 0; i < text.length; i += 1) {
+    if (skipType) {
+      node.textContent = text;
+      return;
+    }
+    node.textContent += text[i];
+    el.log.scrollTop = el.log.scrollHeight;
+    const ch = text[i];
+    let wait = 17;
+    if (ch === "," || ch === ";") wait = 55;
+    if (ch === "." || ch === "!" || ch === "?" || ch === "…" || ch === "—") wait = 95;
+    await sleep(wait);
+  }
+}
+
+async function narrar(paragrafos, cls) {
+  skipType = false;
+  typing = true;
+  if (el.skipHint) el.skipHint.hidden = false;
+  const onSkip = (e) => {
+    if (e.type === "keydown" && e.key >= "1" && e.key <= "9") return;
+    skipType = true;
+  };
+  document.addEventListener("pointerdown", onSkip);
+  document.addEventListener("keydown", onSkip);
   for (const p of paragrafos) {
     const node = document.createElement("p");
     if (cls) node.className = cls;
-    node.textContent = p;
     el.log.appendChild(node);
+    await typeLine(node, p);
   }
+  document.removeEventListener("pointerdown", onSkip);
+  document.removeEventListener("keydown", onSkip);
+  typing = false;
+  if (el.skipHint) el.skipHint.hidden = true;
   el.log.scrollTop = el.log.scrollHeight;
+  if (cls === "danger" && window.AudioFx) AudioFx.stinger();
 }
 
 function limparLog() {
@@ -132,6 +236,7 @@ function escolher(opcoes) {
 
     const finish = (opt) => {
       choiceResolver = null;
+      if (window.AudioFx) AudioFx.click();
       if (opt.art) showArt(opt.art);
       state.turnos += 1;
       atualizarHud();
@@ -173,7 +278,7 @@ function escolher(opcoes) {
 
     const hint = document.createElement("p");
     hint.className = "hint-keys";
-    hint.textContent = "TECLAS 1-9 TAMBEM FUNCIONAM · PASSE O MOUSE PARA VER";
+    hint.textContent = "1–9 para escolher · o mouse revela o que espera";
     el.choices.appendChild(hint);
 
     choiceResolver = (key) => {
@@ -184,6 +289,10 @@ function escolher(opcoes) {
 }
 
 document.addEventListener("keydown", (e) => {
+  if (typing) {
+    if (e.key === " " || e.key === "Enter") e.preventDefault();
+    return;
+  }
   if (!choiceResolver) return;
   if (e.key >= "1" && e.key <= "9") {
     e.preventDefault();
@@ -201,9 +310,9 @@ const FINAIS = new Set([
 ]);
 
 async function cenaInicio() {
-  setArt("inicio");
+  await setArt("inicio");
   limparLog();
-  narrar([
+  await narrar([
     "Você acorda suando frio.",
     "O papel de parede floral está descascado nas bordas, como se alguém tivesse arrancado pétalas com as unhas. O colchão cheira a mofo e a sabão em pó antigo — o mesmo cheiro da sua infância.",
     "No espelho rachado do guarda-roupa, o reflexo pisca um segundo depois de você. Só um segundo. Mas o bastante para o estômago apertar.",
@@ -217,7 +326,7 @@ async function cenaInicio() {
   ]);
   if (op === "2") {
     state.leu_bilhete = true;
-    narrar(
+    await narrar(
       [
         "Você pega o bilhete. O papel está úmido, como se tivesse acabado de ser escrito. No verso, em letra menor, trêmula:",
         '"Ela conta até quinze. Depois, a casa escolhe por você."',
@@ -226,7 +335,7 @@ async function cenaInicio() {
       "flavor",
     );
   } else {
-    narrar(
+    await narrar(
       [
         "Você se levanta. O piso range sob o pé esquerdo, depois — meio segundo depois — range de novo, sozinho. Você atravessa a porta aberta.",
       ],
@@ -238,9 +347,9 @@ async function cenaInicio() {
 
 async function cenaCorredor() {
   if (state.vida <= 0) return "fim_morte";
-  setArt("corredor");
+  await setArt("corredor");
   limparLog();
-  narrar([
+  await narrar([
     "O corredor é estreito demais para uma casa. As paredes parecem ter se aproximado com os anos.",
     "Uma lâmpada amarela treme no teto. Longe, passos imitam os seus com meio segundo de atraso — clic… clic.",
     "À esquerda: a cozinha. À direita: a sala. No fundo, uma escada sobe para o sótão e desce para o porão.",
@@ -263,7 +372,7 @@ async function tentarPorao() {
   if (tem("chave_enferrujada")) {
     if (!state.abriu_porao) {
       state.abriu_porao = true;
-      narrar(
+      await narrar(
         [
           "A chave enferrujada gira com um queixume metálico. O ar que sobe do porão é úmido, doce e podre — como fruta esquecida no escuro.",
         ],
@@ -272,7 +381,7 @@ async function tentarPorao() {
     }
     return "porao";
   }
-  narrar([
+  await narrar([
     "A porta do porão está trancada. A fechadura é antiga, coberta de ferrugem em forma de unha.",
   ]);
   const op = await escolher([
@@ -281,22 +390,22 @@ async function tentarPorao() {
   ]);
   if (op === "1") {
     state.forcou_porao = true;
-    narrar(
+    await narrar(
       [
         "Você empurra com o ombro. A madeira geme, mas não cede. Algo do outro lado empurra de volta — no mesmo ritmo. Uma lasca corta sua palma.",
       ],
       "danger",
     );
     if (perderVida(1)) return "fim_morte";
-    narrar(["Você recua, ofegante. O corredor espera."]);
+    await narrar(["Você recua, ofegante. O corredor espera."]);
     return "corredor";
   }
-  narrar(["Você se afasta. Os passos atrasados continuam, pacientes."]);
+  await narrar(["Você se afasta. Os passos atrasados continuam, pacientes."]);
   return "corredor";
 }
 
 async function chamar() {
-  narrar(
+  await narrar(
     [
       'Você engole seco e grita: "Tem alguém aí?"',
       "O silêncio engorda. Então, do fundo do corredor, a sua própria voz responde — um pouco mais baixa, um pouco mais alegre:",
@@ -307,24 +416,24 @@ async function chamar() {
   );
   state.conheceu_eco = true;
   if (perderVida(1)) return "fim_morte";
-  narrar(["Quando você se vira, não há ninguém. Só a lâmpada tremendo mais forte."]);
+  await narrar(["Quando você se vira, não há ninguém. Só a lâmpada tremendo mais forte."]);
   return "corredor";
 }
 
 async function cenaCozinha() {
-  setArt("cozinha");
+  await setArt("cozinha");
   limparLog();
-  narrar([
+  await narrar([
     "A cozinha cheira a gás antigo e laranja podre.",
     "Na pia, um prato com comida ainda quente — arroz, feijão, um pedaço de carne. O vapor sobe em espirais lentas. Ninguém mora aqui há doze anos.",
     "Na parede acima da mesa, riscos profundos formam letras tortas: CONTANDO ATÉ QUINZE.",
   ]);
   if (tem("fosforos")) {
-    narrar(["A gaveta da esquerda está aberta e vazia. Você já pegou os fósforos."]);
+    await narrar(["A gaveta da esquerda está aberta e vazia. Você já pegou os fósforos."]);
     await escolher([{ value: "1", label: "1) Voltar ao corredor", art: "art/choice-cozinha-voltar.jpg" }]);
     return "corredor";
   }
-  narrar([
+  await narrar([
     "Na gaveta da esquerda, uma caixa de fósforos. A etiqueta está apagada, mas você lembra da marca — a mesma que seu pai usava para acender o fogão.",
   ]);
   const op = await escolher([
@@ -334,12 +443,12 @@ async function cenaCozinha() {
   ]);
   if (op === "1") {
     pegar("fosforos");
-    narrar(
+    await narrar(
       ["Você guarda os fósforos. A caixa é leve demais — quase vazia. Dentro, restam três palitos. Três chances."],
       "item",
     );
   } else if (op === "3") {
-    narrar([
+    await narrar([
       "Você encosta o dedo no arroz. Escaldante. Quando retira a mão, a comida ainda fumega… e, por um instante, você vê uma segunda mão — a sua, mais nova — fazendo o mesmo gesto do outro lado do vapor.",
       "A visão some. O prato continua lá.",
     ]);
@@ -349,25 +458,26 @@ async function cenaCozinha() {
     ]);
     if (op2 === "1") {
       pegar("fosforos");
-      narrar(["Você pega os fósforos. A caixa treme na sua mão."], "item");
+      await narrar(["Você pega os fósforos. A caixa treme na sua mão."], "item");
     } else {
-      narrar(["Você deixa a cozinha. O cheiro de laranja te segue."]);
+      await narrar(["Você deixa a cozinha. O cheiro de laranja te segue."]);
     }
   } else {
-    narrar(["Você fecha a gaveta sem pegar nada e volta."]);
+    await narrar(["Você fecha a gaveta sem pegar nada e volta."]);
   }
   return "corredor";
 }
 
 async function cenaSala() {
-  setArt("sala");
+  await setArt("sala");
   limparLog();
-  narrar([
+  await narrar([
     "A sala está coberta. O sofá usa um lençol branco manchado de amarelo. Relógios parados. Poeira em camadas.",
     "A TV de tubo olha para você com a tela morta — um olho cinza, opaco.",
   ]);
   if (state.ouviu_fita) {
-    narrar([
+    if (window.AudioFx) AudioFx.staticBurst();
+    await narrar([
       "A TV liga sozinha. Estática. No meio do ruído branco, um rosto se forma — o seu, mais novo, sorrindo sem chegar aos olhos.",
     ]);
   }
@@ -386,72 +496,73 @@ async function cenaSala() {
   const op = await escolher(opcoes);
   if (op === "1") {
     if (tem("chave_enferrujada")) {
-      narrar(["A gaveta está vazia. A chave já está com você."]);
+      await narrar(["A gaveta está vazia. A chave já está com você."]);
     } else {
-      narrar(
+      await narrar(
         [
           "A gaveta range. Dentro: uma chave enferrujada, quente ao toque, como se alguém a tivesse segurado agora há pouco. Na alça, um pedaço de fita isolante com a palavra PORÃO.",
         ],
         "item",
       );
       pegar("chave_enferrujada");
-      narrar(["Você guarda a chave. Ela esfria na sua mão aos poucos."]);
+      await narrar(["Você guarda a chave. Ela esfria na sua mão aos poucos."]);
     }
     return "sala";
   }
   if (op === "2") {
     state.viu_tv = true;
+    if (window.AudioFx) AudioFx.staticBurst();
     if (state.ouviu_fita) {
-      narrar([
+      await narrar([
         "Você se aproxima da tela. O rosto de criança abre a boca. Não sai som — sai um sopro frio pela fresta do painel. A estática sussurra:",
         '"Você deixou alguém no seu lugar."',
         "A coragem sobe na garganta como náusea. Agora você sabe: precisa ver o espelho de verdade.",
       ]);
     } else {
-      narrar([
+      await narrar([
         "Você liga a TV. Só estática. No chiado, quase dá para ouvir alguém contar: um… dois… três… Você desliga antes de chegar a quinze.",
       ]);
     }
     return "sala";
   }
   if (op === "4") {
-    narrar([
+    await narrar([
       "O rosto na estática inclina a cabeça. A tela estala. Você sente um puxão atrás dos olhos — e o mundo vira escuro úmido. Quando a visão volta, você está diante de um espelho coberto por um pano.",
     ]);
     return "espelho";
   }
-  narrar(["Você deixa a sala. O lençol do sofá se mexe sem vento."]);
+  await narrar(["Você deixa a sala. O lençol do sofá se mexe sem vento."]);
   return "corredor";
 }
 
 async function cenaSotao() {
-  setArt("sotao");
+  await setArt("sotao");
   limparLog();
-  narrar([
+  await narrar([
     "A escada range a cada degrau. O sótão cheira a poeira quente e a madeira velha. Caixas empilhadas. Um baú de brinquedos cobertos por lençol.",
   ]);
   if (!tem("fosforos")) {
-    narrar(["Está escuro demais. Suas mãos encontram arestas, teias, algo macio que pode ser um casaco… ou não."]);
+    await narrar(["Está escuro demais. Suas mãos encontram arestas, teias, algo macio que pode ser um casaco… ou não."]);
     const op = await escolher([
       { value: "1", label: "1) Insistir no escuro", art: "art/choice-sotao-escuro-1.jpg" },
       { value: "2", label: "2) Descer ao corredor", art: "art/choice-sotao-escuro-2.jpg" },
     ]);
     if (op === "2") {
-      narrar(["Você desce. A escuridão do sótão parece aliviada."]);
+      await narrar(["Você desce. A escuridão do sótão parece aliviada."]);
       return "corredor";
     }
-    narrar(
+    await narrar(
       [
         "Você avança. O pé encontra o vazio entre duas tábuas. Você cai de joelho. Algo — uma unha? um fio? — raspa seu tornozelo.",
       ],
       "danger",
     );
     if (perderVida(1)) return "fim_morte";
-    narrar(["Você engatinha de volta à escada, o coração batendo atrasado, como os passos do corredor."]);
+    await narrar(["Você engatinha de volta à escada, o coração batendo atrasado, como os passos do corredor."]);
     return "corredor";
   }
 
-  narrar([
+  await narrar([
     "Você risca um fósforo. A chama treme e revela o sótão em pedaços laranja: caixas, um gravador de fita cassete, uma vela branca sem usar.",
   ]);
 
@@ -476,12 +587,12 @@ async function cenaSotao() {
     if (op === "1") {
       if (!tem("fita_cassete")) {
         pegar("fita_cassete");
-        narrar(
+        await narrar(
           ["Você puxa a fita do gravador. A etiqueta, na sua letra de criança: EU / OUTRO."],
           "item",
         );
       }
-      narrar([
+      await narrar([
         "Você aperta play. Chiado. Então uma voz de criança — a sua — sussurra perto demais do microfone:",
         '"Quando eu crescer, vou deixar alguém no meu lugar."',
         "Pausa. Respiração. Depois, mais baixo:",
@@ -494,44 +605,44 @@ async function cenaSotao() {
     if (op === "2") {
       if (!tem("vela")) {
         pegar("vela");
-        narrar(
+        await narrar(
           [
             "Você guarda a vela. A cera está fria, mas o pavio cheira a fumaça recente — como se alguém tivesse apagado agora.",
           ],
           "item",
         );
       } else {
-        narrar(["A vela já está com você."]);
+        await narrar(["A vela já está com você."]);
       }
       continue;
     }
     if (op === "4") {
-      narrar([
+      await narrar([
         "A voz da criança na fita parece vir de baixo. Você segue o som escada abaixo, atravessa o corredor sem olhar, e desce ao porão — até um espelho coberto por pano.",
       ]);
       return "espelho";
     }
-    narrar(["Você desce. O fósforo se apaga no último degrau."]);
+    await narrar(["Você desce. O fósforo se apaga no último degrau."]);
     return "corredor";
   }
 }
 
 async function cenaPorao() {
-  setArt("porao");
+  await setArt("porao");
   limparLog();
-  narrar([
+  await narrar([
     "O porão engole o som. Umidade cola na pele. Nas paredes, marcas de unha formam o seu nome — letra por letra, profundas demais para uma brincadeira.",
   ]);
   if (!tem("fosforos")) {
-    narrar(["Sem luz, o chão some. Você tropeça numa caixa. O joelho bate no concreto."], "danger");
+    await narrar(["Sem luz, o chão some. Você tropeça numa caixa. O joelho bate no concreto."], "danger");
     if (perderVida(1)) return "fim_morte";
-    narrar(["Você engatinha até a escada, guiado só pelo cheiro menos podre de cima."]);
+    await narrar(["Você engatinha até a escada, guiado só pelo cheiro menos podre de cima."]);
     const op = await escolher([
       { value: "1", label: "1) Subir ao corredor", art: "art/choice-porao-escuro-1.jpg" },
       { value: "2", label: "2) Tentar de novo no escuro", art: "art/choice-porao-escuro-2.jpg" },
     ]);
     if (op === "1") return "corredor";
-    narrar(
+    await narrar(
       [
         "Você insiste. Dedos encontram um pano grosso sobre algo liso — vidro. Um espelho. Sem luz, você não ousa puxar o pano.",
       ],
@@ -541,7 +652,7 @@ async function cenaPorao() {
     return "corredor";
   }
 
-  narrar([
+  await narrar([
     "Você risca um fósforo. A chama mostra a inscrição completa nas paredes: o seu nome, repetido, e abaixo:",
     '"ELE FICOU."',
     "No chão, uma foto rasgada. No fundo, uma porta baixa coberta por um pano escuro — o formato de um espelho de corpo inteiro.",
@@ -561,37 +672,37 @@ async function cenaPorao() {
       if (!tem("foto_rasgada")) {
         pegar("foto_rasgada");
         state.viu_foto = true;
-        narrar(
+        await narrar(
           [
             "A foto mostra a casa intacta, ensolarada. No jardim, uma criança — você — sorri. Atrás dela, uma sombra com o mesmo sorriso, atrasada um passo. A borda da foto está queimada.",
           ],
           "item",
         );
       } else {
-        narrar(["Você já guarda a foto. O sorriso da sombra não muda."]);
+        await narrar(["Você já guarda a foto. O sorriso da sombra não muda."]);
       }
       continue;
     }
     if (op === "2") {
-      narrar([
+      await narrar([
         "Você puxa o pano. O tecido cai como pele morta. O espelho não mostra o porão — mostra o corredor de cima, vazio… e alguém com o seu rosto já te esperando do outro lado, sorrindo.",
       ]);
       state.conheceu_eco = true;
       return "espelho";
     }
-    narrar(["Você sobe. O fósforo morre entre os dedos."]);
+    await narrar(["Você sobe. O fósforo morre entre os dedos."]);
     return "corredor";
   }
 }
 
 async function cenaEspelho() {
   if (state.vida <= 0) return "fim_morte";
-  setArt("espelho");
+  await setArt("espelho");
   limparLog();
   const temPista =
     state.ouviu_fita || state.viu_foto || tem("fita_cassete") || tem("foto_rasgada");
   if (!temPista) {
-    narrar(
+    await narrar(
       [
         "O espelho te engole com a própria imagem. Sem lembrar por que veio, você só vê o sorriso atrasado. Mãos iguais às suas atravessam o vidro e puxam.",
       ],
@@ -599,7 +710,7 @@ async function cenaEspelho() {
     );
     return "fim_morte";
   }
-  narrar([
+  await narrar([
     "O doppelgänger está do outro lado do vidro, sorrindo com o seu sorriso. Ele fala primeiro — com a sua voz, meio segundo atrasada:",
     '"Eu esperei doze anos. A casa estava com saudade."',
     "O ar cheira a chuva de infância e a ferrugem.",
@@ -620,7 +731,7 @@ async function cenaEspelho() {
   const op = await escolher(opcoes);
   if (op === "1") {
     if (tem("chave_enferrujada") || tem("fosforos")) return "fim_fuga";
-    narrar(
+    await narrar(
       [
         "Você corre. Sem chave, sem luz. A porta da frente está trancada por dentro. Atrasado, o eco chega e põe a mão no seu ombro — a mesma mão.",
       ],
@@ -635,7 +746,7 @@ async function cenaEspelho() {
     ) {
       return "fim_verdade";
     }
-    narrar(
+    await narrar(
       [
         'Você grita: "Você não é eu!" O eco ri com a sua garganta. Sem a fita e a foto, a frase não tem peso. O vidro não quebra. Você quebra.',
       ],
@@ -656,13 +767,14 @@ function resumo(titulo) {
   banner.className = "ending-banner";
   banner.textContent = `FINAL: ${titulo}`;
   el.log.appendChild(banner);
+  if (window.AudioFx) AudioFx.ending(titulo);
   atualizarHud();
 }
 
 async function fimFuga() {
-  setArt("fim_fuga");
+  await setArt("fim_fuga");
   limparLog();
-  narrar([
+  await narrar([
     "Você corre. A porta da frente cede — chave ou luz, não importa. A noite lá fora é real: vento, rua, o cheiro de asfalto molhado.",
     "Você olha para trás. A casa está quieta. Então, no seu antigo quarto, a luz acende sozinha.",
     "Alguém passa atrás da cortina com o seu jeito de andar. Meio segundo atrasado.",
@@ -673,9 +785,9 @@ async function fimFuga() {
 }
 
 async function fimVerdade() {
-  setArt("fim_verdade");
+  await setArt("fim_verdade");
   limparLog();
-  narrar([
+  await narrar([
     'Você segura a foto e a memória da fita. "Você não é eu. Você é o que eu deixei."',
     "O sorriso do eco trinca. Você golpeia o espelho. O vidro soluça — um som úmido, humano — e estilhaça.",
     "A casa inteira respira fundo, como quem larga um segredo. Poeira sobe. A luz amarela morre.",
@@ -686,9 +798,9 @@ async function fimVerdade() {
 }
 
 async function fimEco() {
-  setArt("fim_eco");
+  await setArt("fim_eco");
   limparLog();
-  narrar([
+  await narrar([
     "Você encosta a mão no vidro. O eco encosta a dele. O frio passa. O calor fica do outro lado.",
     "Você tenta recuar. Não há recuo. O porão — ou a sala, ou o quarto — agora é o lado de dentro do espelho.",
     "Do lado de fora, alguém com o seu rosto abre a porta da frente, inspira a noite e sorri no tempo certo.",
@@ -699,9 +811,9 @@ async function fimEco() {
 }
 
 async function fimRitual() {
-  setArt("fim_ritual");
+  await setArt("fim_ritual");
   limparLog();
-  narrar([
+  await narrar([
     "Você risca o fósforo. A vela acende. A chama mostra o eco como ele é: pequeno, assustado, uma criança que prometeu não deixar a casa vazia.",
     "Você diz o que o bilhete escondia — não um nome de pessoa, mas o nome da casa, o apelido que só vocês dois usavam quando era tarde demais para dormir.",
     "O eco encolhe. Vira menino de novo. A vela tremula. Você apaga com os dedos.",
@@ -712,9 +824,9 @@ async function fimRitual() {
 }
 
 async function fimMorte() {
-  setArt("fim_morte");
+  await setArt("fim_morte");
   limparLog();
-  narrar(
+  await narrar(
     [
       "A escuridão fecha como uma boca.",
       "Os passos atrasados — clic… clic — param.",
@@ -729,9 +841,9 @@ async function fimMorte() {
 }
 
 async function fimAtrasado() {
-  setArt("fim_atrasado");
+  await setArt("fim_atrasado");
   limparLog();
-  narrar([
+  await narrar([
     "Quinze. A casa completa a contagem por você.",
     "Do corredor vem a sua voz, paciente, quase carinhosa:",
     '"Não abra a porta se ela já estiver aberta."',
@@ -762,6 +874,8 @@ const CENAS = {
 
 async function loop() {
   let cena = "inicio";
+  document.body.classList.remove("is-ending");
+  delete document.body.dataset.ending;
   while (cena !== "fim") {
     atualizarHud();
     if (state.turnos >= MAX_TURNOS && !FINAIS.has(cena)) {
@@ -776,9 +890,11 @@ async function loop() {
   const again = document.createElement("button");
   again.type = "button";
   again.className = "bit-btn";
-  again.textContent = "▶ JOGAR DE NOVO";
+  again.textContent = "acordar de novo";
   again.addEventListener("click", () => {
     state = estadoInicial();
+    document.body.classList.remove("is-ending", "is-hurt");
+    delete document.body.dataset.ending;
     atualizarHud();
     limparLog();
     limparEscolhas();
@@ -787,27 +903,49 @@ async function loop() {
   el.choices.appendChild(again);
 }
 
+function syncMuteButton() {
+  if (!el.btnMute || !window.AudioFx) return;
+  const muted = AudioFx.isMuted();
+  el.btnMute.setAttribute("aria-pressed", muted ? "true" : "false");
+  el.btnMute.textContent = muted ? "mudo" : "som";
+}
+
 function boot() {
   const lines = [
-    "Sincronizando passos...",
-    "O rastro esta vivo...",
-    "Contando ate quinze...",
-    "Pronto.",
+    "O reflexo ainda não chegou…",
+    "Passos com meio segundo de atraso.",
+    "A casa conta até quinze.",
+    "Ela está com saudade.",
   ];
   let i = 0;
   const tick = setInterval(() => {
     const pct = Math.min(100, ((i + 1) / lines.length) * 100);
     el.bootBar.style.width = `${pct}%`;
-    el.bootLine.textContent = lines[i] || "Pronto.";
+    el.bootLine.textContent = lines[i] || lines[lines.length - 1];
     i += 1;
     if (i >= lines.length) {
       clearInterval(tick);
       el.btnStart.hidden = false;
     }
-  }, 450);
+  }, 700);
+
+  syncMuteButton();
+  if (el.btnMute) {
+    el.btnMute.addEventListener("click", () => {
+      if (!window.AudioFx) return;
+      AudioFx.ensure();
+      AudioFx.setMuted(!AudioFx.isMuted());
+      syncMuteButton();
+    });
+  }
 
   el.btnStart.addEventListener("click", () => {
+    if (window.AudioFx) {
+      AudioFx.ensure();
+      AudioFx.startDrone();
+    }
     el.boot.classList.add("is-done");
+    document.body.dataset.scene = "inicio";
     loop();
   });
 }
