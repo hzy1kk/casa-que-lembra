@@ -3,20 +3,22 @@
 const MAX_TURNOS = 15;
 
 const SCENE_ART = {
-  inicio: "art/house-night.png",
-  corredor: "art/hallway.png",
-  cozinha: "art/hallway.png",
-  sala: "art/hallway.png",
-  sotao: "art/house-night.png",
-  porao: "art/mirror-echo.png",
-  espelho: "art/mirror-echo.png",
-  fim_fuga: "art/house-night.png",
-  fim_verdade: "art/mirror-echo.png",
-  fim_eco: "art/mirror-echo.png",
-  fim_ritual: "art/house-night.png",
-  fim_morte: "art/hallway.png",
-  fim_atrasado: "art/house-night.png",
+  inicio: "art/scene-inicio.jpg",
+  corredor: "art/scene-corredor.jpg",
+  cozinha: "art/scene-cozinha.jpg",
+  sala: "art/scene-sala.jpg",
+  sotao: "art/scene-sotao.jpg",
+  porao: "art/scene-porao.jpg",
+  espelho: "art/scene-espelho.jpg",
+  fim_fuga: "art/scene-fim-fuga.jpg",
+  fim_verdade: "art/scene-fim-verdade.jpg",
+  fim_eco: "art/scene-fim-eco.jpg",
+  fim_ritual: "art/scene-fim-ritual.jpg",
+  fim_morte: "art/scene-fim-morte.jpg",
+  fim_atrasado: "art/scene-fim-atrasado.jpg",
 };
+
+let currentSceneArt = SCENE_ART.inicio;
 
 const SCENE_LABEL = {
   inicio: "QUARTO",
@@ -90,13 +92,18 @@ function atualizarHud() {
   el.inv.textContent = state.inv.length ? state.inv.join(", ") : "nada";
 }
 
-function setArt(cena) {
-  const src = SCENE_ART[cena] || SCENE_ART.inicio;
+function showArt(src, cena) {
   if (el.sceneImg.getAttribute("src") !== src) {
     el.sceneImg.src = src;
   }
-  if (el.stageArt) el.stageArt.dataset.scene = cena;
-  if (el.sceneLoc) el.sceneLoc.textContent = SCENE_LABEL[cena] || cena.toUpperCase();
+  if (cena && el.stageArt) el.stageArt.dataset.scene = cena;
+  if (cena && el.sceneLoc) el.sceneLoc.textContent = SCENE_LABEL[cena] || cena.toUpperCase();
+}
+
+function setArt(cena) {
+  const src = SCENE_ART[cena] || SCENE_ART.inicio;
+  currentSceneArt = src;
+  showArt(src, cena);
 }
 
 function narrar(paragrafos, cls) {
@@ -123,12 +130,13 @@ function escolher(opcoes) {
     limparEscolhas();
     choiceResolver = null;
 
-    const finish = (value) => {
+    const finish = (opt) => {
       choiceResolver = null;
+      if (opt.art) showArt(opt.art);
       state.turnos += 1;
       atualizarHud();
       limparEscolhas();
-      resolve(value);
+      resolve(opt.value);
     };
 
     opcoes.forEach((opt, index) => {
@@ -136,19 +144,41 @@ function escolher(opcoes) {
       btn.type = "button";
       btn.className = "choice-btn";
       btn.dataset.key = String(index + 1);
-      btn.textContent = opt.label;
-      btn.addEventListener("click", () => finish(opt.value));
+
+      if (opt.art) {
+        const img = document.createElement("img");
+        img.src = opt.art;
+        img.alt = "";
+        img.className = "choice-btn__art";
+        btn.appendChild(img);
+      }
+
+      const label = document.createElement("span");
+      label.className = "choice-btn__label";
+      label.textContent = opt.label;
+      btn.appendChild(label);
+
+      btn.addEventListener("click", () => finish(opt));
+      btn.addEventListener("mouseenter", () => {
+        if (opt.art) showArt(opt.art);
+      });
+      btn.addEventListener("focus", () => {
+        if (opt.art) showArt(opt.art);
+      });
+      btn.addEventListener("mouseleave", () => {
+        if (choiceResolver) showArt(currentSceneArt);
+      });
       el.choices.appendChild(btn);
     });
 
     const hint = document.createElement("p");
     hint.className = "hint-keys";
-    hint.textContent = "TECLAS 1-9 TAMBEM FUNCIONAM";
+    hint.textContent = "TECLAS 1-9 TAMBEM FUNCIONAM · PASSE O MOUSE PARA VER";
     el.choices.appendChild(hint);
 
     choiceResolver = (key) => {
       const i = Number(key) - 1;
-      if (i >= 0 && i < opcoes.length) finish(opcoes[i].value);
+      if (i >= 0 && i < opcoes.length) finish(opcoes[i]);
     };
   });
 }
@@ -182,8 +212,8 @@ async function cenaInicio() {
     "A porta do quarto já está aberta. Além dela, o corredor respira uma luz amarela fraca.",
   ]);
   const op = await escolher([
-    { value: "1", label: "1) Levantar e ir ao corredor" },
-    { value: "2", label: "2) Olhar o bilhete de novo" },
+    { value: "1", label: "1) Levantar e ir ao corredor", art: "art/choice-inicio-1.jpg" },
+    { value: "2", label: "2) Olhar o bilhete de novo", art: "art/choice-inicio-2.jpg" },
   ]);
   if (op === "2") {
     state.leu_bilhete = true;
@@ -216,11 +246,11 @@ async function cenaCorredor() {
     "À esquerda: a cozinha. À direita: a sala. No fundo, uma escada sobe para o sótão e desce para o porão.",
   ]);
   const op = await escolher([
-    { value: "1", label: "1) Cozinha" },
-    { value: "2", label: "2) Sala" },
-    { value: "3", label: "3) Sótão" },
-    { value: "4", label: "4) Porão" },
-    { value: "5", label: "5) Chamar quem está aí" },
+    { value: "1", label: "1) Cozinha", art: "art/choice-corredor-1.jpg" },
+    { value: "2", label: "2) Sala", art: "art/choice-corredor-2.jpg" },
+    { value: "3", label: "3) Sótão", art: "art/choice-corredor-3.jpg" },
+    { value: "4", label: "4) Porão", art: "art/choice-corredor-4.jpg" },
+    { value: "5", label: "5) Chamar quem está aí", art: "art/choice-corredor-5.jpg" },
   ]);
   if (op === "1") return "cozinha";
   if (op === "2") return "sala";
@@ -246,8 +276,8 @@ async function tentarPorao() {
     "A porta do porão está trancada. A fechadura é antiga, coberta de ferrugem em forma de unha.",
   ]);
   const op = await escolher([
-    { value: "1", label: "1) Forçar a porta" },
-    { value: "2", label: "2) Desistir e voltar" },
+    { value: "1", label: "1) Forçar a porta", art: "art/choice-porao-forcar.jpg" },
+    { value: "2", label: "2) Desistir e voltar", art: "art/choice-porao-desistir.jpg" },
   ]);
   if (op === "1") {
     state.forcou_porao = true;
@@ -291,16 +321,16 @@ async function cenaCozinha() {
   ]);
   if (tem("fosforos")) {
     narrar(["A gaveta da esquerda está aberta e vazia. Você já pegou os fósforos."]);
-    await escolher([{ value: "1", label: "1) Voltar ao corredor" }]);
+    await escolher([{ value: "1", label: "1) Voltar ao corredor", art: "art/choice-cozinha-voltar.jpg" }]);
     return "corredor";
   }
   narrar([
     "Na gaveta da esquerda, uma caixa de fósforos. A etiqueta está apagada, mas você lembra da marca — a mesma que seu pai usava para acender o fogão.",
   ]);
   const op = await escolher([
-    { value: "1", label: "1) Pegar os fósforos" },
-    { value: "2", label: "2) Deixar e voltar ao corredor" },
-    { value: "3", label: "3) Tocar a comida quente" },
+    { value: "1", label: "1) Pegar os fósforos", art: "art/choice-cozinha-1.jpg" },
+    { value: "2", label: "2) Deixar e voltar ao corredor", art: "art/choice-cozinha-2.jpg" },
+    { value: "3", label: "3) Tocar a comida quente", art: "art/choice-cozinha-3.jpg" },
   ]);
   if (op === "1") {
     pegar("fosforos");
@@ -314,8 +344,8 @@ async function cenaCozinha() {
       "A visão some. O prato continua lá.",
     ]);
     const op2 = await escolher([
-      { value: "1", label: "1) Pegar os fósforos agora" },
-      { value: "2", label: "2) Voltar ao corredor sem eles" },
+      { value: "1", label: "1) Pegar os fósforos agora", art: "art/choice-cozinha-1.jpg" },
+      { value: "2", label: "2) Voltar ao corredor sem eles", art: "art/choice-cozinha-2.jpg" },
     ]);
     if (op2 === "1") {
       pegar("fosforos");
@@ -342,12 +372,16 @@ async function cenaSala() {
     ]);
   }
   const opcoes = [
-    { value: "1", label: "1) Abrir a gaveta da estante" },
-    { value: "2", label: "2) Examinar a TV" },
-    { value: "3", label: "3) Voltar ao corredor" },
+    { value: "1", label: "1) Abrir a gaveta da estante", art: "art/choice-sala-1.jpg" },
+    { value: "2", label: "2) Examinar a TV", art: "art/choice-sala-2.jpg" },
+    { value: "3", label: "3) Voltar ao corredor", art: "art/choice-sala-3.jpg" },
   ];
   if (state.ouviu_fita && state.viu_foto) {
-    opcoes.push({ value: "4", label: "4) Seguir o rosto na estática (para o espelho)" });
+    opcoes.push({
+      value: "4",
+      label: "4) Seguir o rosto na estática (para o espelho)",
+      art: "art/choice-sala-4.jpg",
+    });
   }
   const op = await escolher(opcoes);
   if (op === "1") {
@@ -399,8 +433,8 @@ async function cenaSotao() {
   if (!tem("fosforos")) {
     narrar(["Está escuro demais. Suas mãos encontram arestas, teias, algo macio que pode ser um casaco… ou não."]);
     const op = await escolher([
-      { value: "1", label: "1) Insistir no escuro" },
-      { value: "2", label: "2) Descer ao corredor" },
+      { value: "1", label: "1) Insistir no escuro", art: "art/choice-sotao-escuro-1.jpg" },
+      { value: "2", label: "2) Descer ao corredor", art: "art/choice-sotao-escuro-2.jpg" },
     ]);
     if (op === "2") {
       narrar(["Você desce. A escuridão do sótão parece aliviada."]);
@@ -423,15 +457,20 @@ async function cenaSotao() {
 
   while (true) {
     const opcoes = [
-      { value: "1", label: "1) Examinar o gravador / a fita" },
+      { value: "1", label: "1) Examinar o gravador / a fita", art: "art/choice-sotao-1.jpg" },
       {
         value: "2",
         label: tem("vela") ? "2) (Você já tem a vela)" : "2) Pegar a vela",
+        art: "art/choice-sotao-2.jpg",
       },
-      { value: "3", label: "3) Descer ao corredor" },
+      { value: "3", label: "3) Descer ao corredor", art: "art/choice-sotao-3.jpg" },
     ];
     if (state.ouviu_fita && (state.viu_foto || state.viu_tv)) {
-      opcoes.push({ value: "4", label: "4) Seguir o eco da fita (para o espelho)" });
+      opcoes.push({
+        value: "4",
+        label: "4) Seguir o eco da fita (para o espelho)",
+        art: "art/choice-sotao-4.jpg",
+      });
     }
     const op = await escolher(opcoes);
     if (op === "1") {
@@ -488,8 +527,8 @@ async function cenaPorao() {
     if (perderVida(1)) return "fim_morte";
     narrar(["Você engatinha até a escada, guiado só pelo cheiro menos podre de cima."]);
     const op = await escolher([
-      { value: "1", label: "1) Subir ao corredor" },
-      { value: "2", label: "2) Tentar de novo no escuro" },
+      { value: "1", label: "1) Subir ao corredor", art: "art/choice-porao-escuro-1.jpg" },
+      { value: "2", label: "2) Tentar de novo no escuro", art: "art/choice-porao-escuro-2.jpg" },
     ]);
     if (op === "1") return "corredor";
     narrar(
@@ -513,9 +552,10 @@ async function cenaPorao() {
       {
         value: "1",
         label: tem("foto_rasgada") ? "1) (Você já tem a foto)" : "1) Pegar a foto rasgada",
+        art: "art/choice-porao-1.jpg",
       },
-      { value: "2", label: "2) Puxar o pano do espelho" },
-      { value: "3", label: "3) Subir ao corredor" },
+      { value: "2", label: "2) Puxar o pano do espelho", art: "art/choice-porao-2.jpg" },
+      { value: "3", label: "3) Subir ao corredor", art: "art/choice-porao-3.jpg" },
     ]);
     if (op === "1") {
       if (!tem("foto_rasgada")) {
@@ -566,12 +606,16 @@ async function cenaEspelho() {
   ]);
   state.conheceu_eco = true;
   const opcoes = [
-    { value: "1", label: "1) Correr para a porta da frente" },
-    { value: '2', label: '2) Confrontar: "Você não é eu"' },
-    { value: "3", label: "3) Aceitar trocar de lugar" },
+    { value: "1", label: "1) Correr para a porta da frente", art: "art/choice-espelho-1.jpg" },
+    { value: "2", label: '2) Confrontar: "Você não é eu"', art: "art/choice-espelho-2.jpg" },
+    { value: "3", label: "3) Aceitar trocar de lugar", art: "art/choice-espelho-3.jpg" },
   ];
   if (tem("vela") && tem("fosforos") && (state.ouviu_fita || tem("fita_cassete"))) {
-    opcoes.push({ value: "4", label: "4) Acender a vela e dizer o nome do bilhete" });
+    opcoes.push({
+      value: "4",
+      label: "4) Acender a vela e dizer o nome do bilhete",
+      art: "art/choice-espelho-4.jpg",
+    });
   }
   const op = await escolher(opcoes);
   if (op === "1") {

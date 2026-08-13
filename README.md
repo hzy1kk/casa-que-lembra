@@ -17,6 +17,8 @@ Abra http://localhost:8080
 
 Arquivos: [`web/index.html`](web/index.html) · [`web/styles.css`](web/styles.css) · [`web/game.js`](web/game.js) · [`web/art/`](web/art/)
 
+Cada **fase** (quarto, corredor, cozinha, sala, sótão, porão, espelho e os 6 finais) tem ilustração própria. Cada **escolha** mostra uma miniatura; passar o mouse (ou focar com teclado) troca a arte principal para o momento daquela opção.
+
 ### Deploy Vercel
 
 O site estático sai da pasta `web/` (`vercel.json`). Importar o repo no [Vercel](https://vercel.com/new) ou:
