@@ -15,6 +15,17 @@
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body data-hp="3" data-scene="boot">
+    <svg class="svg-filters" aria-hidden="true" focusable="false">
+      <filter id="green-to-red" color-interpolation-filters="sRGB">
+        <feColorMatrix
+          type="matrix"
+          values="1 0.9 0 0 0
+                  0 0.12 0 0 0
+                  0 0.08 0.85 0 0
+                  0 0 0 1 0"
+        />
+      </filter>
+    </svg>
     <div class="fx" aria-hidden="true">
       <div class="fx__grain"></div>
       <div class="fx__vignette"></div>

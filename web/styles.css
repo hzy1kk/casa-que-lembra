@@ -11,7 +11,7 @@
   --blood: #4a1218;
   --blood-hot: #6e1c24;
   --amber: #6b4a22;
-  --sick: #2a3326;
+  --sick: #3a1014;
   --black: #010101;
   --shadow: rgba(0, 0, 0, 0.85);
   --font-ui: "Press Start 2P", monospace;
@@ -20,10 +20,11 @@
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
+.svg-filters {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
 }
 
 html,
@@ -53,12 +54,12 @@ body[data-hp="1"] .fx__vignette {
 }
 
 body.is-ending .stage__art img {
-  filter: contrast(1.12) saturate(0.45) brightness(0.52);
+  filter: url(#green-to-red) contrast(1.12) saturate(0.5) brightness(0.5);
 }
 
 body.is-ending[data-ending="morte"] .stage__art img,
 body.is-ending[data-ending="atrasado"] .stage__art img {
-  filter: grayscale(0.9) contrast(1.25) brightness(0.32);
+  filter: url(#green-to-red) grayscale(0.7) contrast(1.25) brightness(0.32);
 }
 
 @keyframes hurt-shake {
@@ -270,7 +271,7 @@ body.is-ending[data-ending="atrasado"] .stage__art img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  filter: contrast(1.1) saturate(0.55) brightness(0.52);
+  filter: url(#green-to-red) contrast(1.12) saturate(0.85) brightness(0.58);
   transition: filter 400ms var(--ease), opacity 280ms var(--ease), transform 1.8s var(--ease);
   transform: scale(1.04);
 }
@@ -456,7 +457,7 @@ body[data-scene="porao"] .stage__echo {
   height: 62px;
   flex-shrink: 0;
   object-fit: cover;
-  filter: contrast(1.1) saturate(0.5) brightness(0.48);
+  filter: url(#green-to-red) contrast(1.1) saturate(0.7) brightness(0.5);
   background: var(--black);
 }
 
@@ -475,7 +476,7 @@ body[data-scene="porao"] .stage__echo {
 
 .choice-btn:hover .choice-btn__art,
 .choice-btn:focus-visible .choice-btn__art {
-  filter: contrast(1.12) saturate(0.6) brightness(0.62);
+  filter: url(#green-to-red) contrast(1.12) saturate(0.75) brightness(0.62);
 }
 
 .choice-btn:active,
@@ -533,7 +534,7 @@ body[data-scene="porao"] .stage__echo {
   width: 100%;
   height: 180px;
   object-fit: cover;
-  filter: contrast(1.12) saturate(0.4) brightness(0.38);
+  filter: url(#green-to-red) contrast(1.12) saturate(0.55) brightness(0.4);
   border: 1px solid #000;
   margin-bottom: 1.1rem;
   box-shadow: 0 20px 50px var(--shadow);
