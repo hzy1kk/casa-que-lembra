@@ -81,7 +81,6 @@ const el = {
   bootLine: document.getElementById("boot-line"),
   btnStart: document.getElementById("btn-start"),
   btnMute: document.getElementById("btn-mute"),
-  skipHint: document.getElementById("skip-hint"),
   fade: document.getElementById("fx-fade"),
 };
 
@@ -199,7 +198,6 @@ async function typeLine(node, text) {
 async function narrar(paragrafos, cls) {
   skipType = false;
   typing = true;
-  if (el.skipHint) el.skipHint.hidden = false;
   const onSkip = (e) => {
     if (e.type === "keydown" && e.key >= "1" && e.key <= "9") return;
     skipType = true;
@@ -215,7 +213,6 @@ async function narrar(paragrafos, cls) {
   document.removeEventListener("pointerdown", onSkip);
   document.removeEventListener("keydown", onSkip);
   typing = false;
-  if (el.skipHint) el.skipHint.hidden = true;
   el.log.scrollTop = el.log.scrollHeight;
   if (cls === "danger" && window.AudioFx) AudioFx.stinger();
 }
@@ -275,11 +272,6 @@ function escolher(opcoes) {
       });
       el.choices.appendChild(btn);
     });
-
-    const hint = document.createElement("p");
-    hint.className = "hint-keys";
-    hint.textContent = "1–9 para escolher · o mouse revela o que espera";
-    el.choices.appendChild(hint);
 
     choiceResolver = (key) => {
       const i = Number(key) - 1;

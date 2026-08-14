@@ -369,15 +369,6 @@ body[data-scene="porao"] .stage__echo {
   color: var(--amber);
 }
 
-.stage__skip {
-  margin: 0.65rem 0 0;
-  font-family: var(--font-ui);
-  font-size: 0.32rem;
-  letter-spacing: 0.08em;
-  color: var(--muted);
-  text-transform: lowercase;
-}
-
 .stage__inv {
   display: flex;
   flex-wrap: wrap;
@@ -421,15 +412,6 @@ body[data-scene="porao"] .stage__echo {
   flex-direction: column;
   gap: 0.45rem;
   padding-top: 0.85rem;
-}
-
-.hint-keys {
-  margin: 0.2rem 0 0;
-  font-family: var(--font-ui);
-  font-size: 0.32rem;
-  color: var(--muted);
-  text-align: left;
-  letter-spacing: 0.06em;
 }
 
 .bit-btn,
@@ -502,15 +484,6 @@ body[data-scene="porao"] .stage__echo {
   outline: none;
 }
 
-.footer {
-  margin-top: 1.25rem;
-  text-align: center;
-  font-family: var(--font-story);
-  font-style: italic;
-  font-size: 1rem;
-  color: var(--muted);
-}
-
 .boot {
   position: fixed;
   inset: 0;
@@ -577,14 +550,6 @@ body[data-scene="porao"] .stage__echo {
   width: 0%;
   background: var(--blood-hot);
   transition: width 220ms linear;
-}
-
-.boot__warn {
-  margin: 0.85rem 0 0;
-  font-family: var(--font-ui);
-  font-size: 0.32rem;
-  color: var(--muted);
-  letter-spacing: 0.08em;
 }
 
 .ending-banner {
