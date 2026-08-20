@@ -3,7 +3,7 @@ A Casa que Lembra — PyScript GameJam V2
 Terror narrativo interativo (botões, sem input/terminal).
 """
 
-from pyscript import document, window
+from pyscript import document, window, when
 
 try:
     from pyodide.ffi import create_proxy
@@ -923,19 +923,37 @@ def configurar_interface():
     else:
         cover.classList.add("hidden")
 
-    document.querySelector("#btn-iniciar").addEventListener(
-        "click", create_proxy(iniciar_jogo)
-    )
-    document.querySelector("#btn-reiniciar").addEventListener(
-        "click", create_proxy(reiniciar_aventura)
-    )
-
-    for i in range(4):
-        document.querySelector(f"#opt-{i}").addEventListener(
-            "click", create_proxy(ao_clicar_opcao)
-        )
-
     document.querySelector("#loading").classList.add("hidden")
+
+
+@when("click", "#btn-iniciar")
+def _on_iniciar(event):
+    iniciar_jogo(event)
+
+
+@when("click", "#btn-reiniciar")
+def _on_reiniciar(event):
+    reiniciar_aventura(event)
+
+
+@when("click", "#opt-0")
+def _on_opt0(event):
+    ao_clicar_opcao(event)
+
+
+@when("click", "#opt-1")
+def _on_opt1(event):
+    ao_clicar_opcao(event)
+
+
+@when("click", "#opt-2")
+def _on_opt2(event):
+    ao_clicar_opcao(event)
+
+
+@when("click", "#opt-3")
+def _on_opt3(event):
+    ao_clicar_opcao(event)
 
 
 configurar_interface()
