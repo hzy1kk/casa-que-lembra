@@ -1,64 +1,47 @@
 # A Casa que Lembra
 
-Jogo de terror em texto. Você acorda no quarto de infância — a casa está vazia há 12 anos. Algo com o seu rosto caminha nos corredores.
+Terror narrativo interativo no framework **PyScript GameJam V2**.
 
-## Versão 8-bit dark (navegador)
+Você acorda no quarto de infância. A casa está vazia há 12 anos. Algo com o seu rosto caminha nos corredores.
 
-Interface cinematográfica dark (sangue, cinza, ferrugem), texto datilografado, som procedural e uma arte por fase/escolha.
+## Jogar online
 
-**Online:** (após deploy Vercel) · **Repo:** https://github.com/hzy1kk/casa-que-lembra
+Após o deploy Vercel: [casa-que-lembra.vercel.app](https://casa-que-lembra.vercel.app)
 
-```bash
-cd web
-python3 -m http.server 8080
-```
-
-Abra http://localhost:8080
-
-Arquivos: [`web/index.html`](web/index.html) · [`web/styles.css`](web/styles.css) · [`web/game.js`](web/game.js) · [`web/art/`](web/art/)
-
-Cada **fase** tem ilustração própria. Cada **escolha** mostra miniatura (hover troca a arte). O texto entra letra a letra (clique ou espaço adianta). Há drone, passos atrasados e batimento quando a vida cai.
-
-Botão **som / mudo** no canto.
-
-### Deploy Vercel
-
-O site estático sai da pasta `web/` (`vercel.json`). Importar o repo no [Vercel](https://vercel.com/new) ou:
+## Executar localmente
 
 ```bash
-npx vercel --prod
+python3 -m http.server 8000
 ```
 
-## Terminal (Python)
+Abra http://localhost:8000
 
-```bash
-python3 main.py
-```
+No Windows, também pode usar `INICIAR_JOGO.bat`.
 
-### Google Colab
-
-Abra o notebook [`casa_que_lembra_colab.ipynb`](casa_que_lembra_colab.ipynb) no [Colab](https://colab.research.google.com/) (Arquivo → Fazer upload do notebook). Rode a célula do código e depois `jogar()`.
-
-Cada escolha gasta **1 interação** (máximo **15**). Se o tempo acabar, a casa escolhe por você.
-
-## Objetivo
-
-Explorar a casa, reunir pistas e itens, e enfrentar o eco no espelho. Há vários finais — fuga, verdade, troca, ritual secreto, morte e atraso.
-
-## Itens
-
-| Item | Onde | Para quê |
-|------|------|----------|
-| Fósforos | Cozinha | Luz no sótão/porão; ajuda na fuga |
-| Chave enferrujada | Sala | Abre o porão |
-| Fita cassete | Sótão | Pista para o final da verdade / ritual |
-| Vela | Sótão (com fósforos) | Ritual secreto no espelho |
-| Foto rasgada | Porão (com luz) | Pista para o final da verdade |
+Não abra `index.html` por `file://` — use o servidor HTTP.
 
 ## Estrutura
 
 ```
-main.py / cenas/   — versão terminal
-web/               — versão 8-bit dark no navegador
-casa_que_lembra_colab.ipynb
+index.html          — interface PyScript (responsiva)
+main.py             — CONFIG, STATE, SCENES, regras
+assets/imagens/     — capas e cenas
+assets/audios/      — trilhas
+assets/videos/      — introdução e fita
+legado/             — versão anterior (terminal + web 8-bit)
+backups/            — backup .tar.gz do jogo funcional
 ```
+
+## Mecânicas
+
+- Vida, inventário e pontuação
+- Decisões condicionadas a itens (porão, verdade, ritual)
+- Múltiplos finais + final secreto (ritual com vela + fósforos + fita)
+- Troca de trilha no espelho / amanhecer
+- Vídeos na introdução e na fita
+- Até 4 opções por cena (botões)
+- Reiniciar aventura
+
+## Autor
+
+lucas lohan
