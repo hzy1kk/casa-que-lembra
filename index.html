@@ -198,6 +198,8 @@
         border: 1px solid var(--line);
         padding: 0.85rem;
         gap: 0.7rem;
+        position: relative;
+        z-index: 2;
       }
 
       #cena-titulo {
@@ -306,7 +308,7 @@
       <h1 id="boot-title">A Casa que Lembra</h1>
       <p id="boot-sub"></p>
       <p id="boot-author"></p>
-      <button type="button" id="btn-iniciar">▶ INICIAR JOGO</button>
+      <button type="button" id="btn-iniciar" disabled>Carregando…</button>
     </div>
 
     <div id="app">
@@ -344,6 +346,32 @@
         </section>
       </div>
     </div>
+
+    <script>
+      function wireUi() {
+        const iniciar = document.getElementById("btn-iniciar");
+        const reiniciar = document.getElementById("btn-reiniciar");
+        if (iniciar) {
+          iniciar.addEventListener("click", () => {
+            if (window.iniciar_jogo) window.iniciar_jogo();
+          });
+        }
+        if (reiniciar) {
+          reiniciar.addEventListener("click", () => {
+            if (window.reiniciar_aventura) window.reiniciar_aventura();
+          });
+        }
+        for (let i = 0; i < 4; i++) {
+          const btn = document.getElementById("opt-" + i);
+          if (!btn) continue;
+          btn.addEventListener("click", () => {
+            const acao = btn.getAttribute("data-acao");
+            if (acao && window.executar_acao_js) window.executar_acao_js(acao);
+          });
+        }
+      }
+      wireUi();
+    </script>
 
     <script type="py" src="./main.py"></script>
   </body>
