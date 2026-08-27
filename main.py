@@ -27,8 +27,8 @@ CONFIG = {
     "subtitulo": "Algo com o seu rosto caminha nos corredores",
     "autor": "lucas lohan",
     "icone": "⌂",
-    "capa": "assets/imagens/capa.jpg",
-    "trilha_inicial": "assets/audios/trilha_casa.mp3",
+    "capa": "/assets/imagens/capa.jpg",
+    "trilha_inicial": "/assets/audios/trilha_casa.mp3",
     "volume_inicial": 0.55,
     "vida_inicial": 3,
     "pontos_iniciais": 0,
@@ -40,11 +40,11 @@ SAVE_KEY = "casa_que_lembra_save"
 RANK_KEY = "casa_que_lembra_ranking"
 
 SFX = {
-    "click": "assets/audios/sfx_click.mp3",
-    "porta": "assets/audios/sfx_porta.mp3",
-    "passos": "assets/audios/sfx_passos.mp3",
-    "tv": "assets/audios/sfx_tv.mp3",
-    "dano": "assets/audios/sfx_dano.mp3",
+    "click": "/assets/audios/sfx_click.mp3",
+    "porta": "/assets/audios/sfx_porta.mp3",
+    "passos": "/assets/audios/sfx_passos.mp3",
+    "tv": "/assets/audios/sfx_tv.mp3",
+    "dano": "/assets/audios/sfx_dano.mp3",
 }
 
 # Finais conhecidos (para ranking e para não forçar “atrasado”)
@@ -93,6 +93,17 @@ def _estado_inicial():
         },
     }
 
+
+
+def asset(path):
+    """Normaliza caminho de mídia para URL absoluta (evita quebrar no mobile/Vercel)."""
+    if not path:
+        return path
+    path = str(path).strip()
+    if path.startswith("http://") or path.startswith("https://") or path.startswith("/"):
+        return path
+    path = path.lstrip("./")
+    return "/" + path
 
 state = _estado_inicial()
 _js_proxies = []
@@ -153,7 +164,7 @@ def tocar_sfx(chave_ou_caminho):
     """Toca efeito sonoro curto via JavaScript (não corta a trilha)."""
     src = SFX.get(chave_ou_caminho, chave_ou_caminho)
     try:
-        window.tocarSfx(src)
+        window.tocarSfx(asset(src))
     except Exception:
         pass
 
@@ -180,7 +191,7 @@ def trocar_audio(caminho):
     if not caminho:
         return
     try:
-        window.tocarTrilha(caminho, CONFIG.get("volume_inicial", 0.48))
+        window.tocarTrilha(asset(caminho), CONFIG.get("volume_inicial", 0.55))
     except Exception:
         # fallback direto no elemento
         player = document.querySelector("#audio-player")
@@ -370,8 +381,8 @@ def mostrar_cena(nome):
 
     # Fade + troca de mídia via helper JS (evita proxies temporários no setTimeout)
     try:
-        video = cena.get("video") or ""
-        image = cena.get("image") or CONFIG.get("capa") or ""
+        video = asset(cena.get("video") or "")
+        image = asset(cena.get("image") or CONFIG.get("capa") or "")
         autoplay = bool(cena.get("video_autoplay"))
         window.aplicarMidiaCena(video, image, autoplay)
     except Exception:
@@ -478,8 +489,8 @@ def _finalizar(nome_cena, pontos_extra=0):
 SCENES = {
     "inicio": {
         "title": "O quarto",
-        "image": "assets/imagens/inicio.jpg",
-        "video": "assets/videos/introducao.mp4",
+        "image": "/assets/imagens/inicio.jpg",
+        "video": "/assets/videos/introducao.mp4",
         "video_autoplay": False,
         "text": (
             "Você acorda suando frio.\n\n"
@@ -497,7 +508,7 @@ SCENES = {
     },
     "bilhete": {
         "title": "O verso do bilhete",
-        "image": "assets/imagens/inicio.jpg",
+        "image": "/assets/imagens/inicio.jpg",
         "text": (
             "O papel está úmido, como se tivesse acabado de ser escrito.\n\n"
             "No verso, em letra menor, trêmula:\n"
@@ -511,7 +522,7 @@ SCENES = {
     },
     "corredor": {
         "title": "O corredor",
-        "image": "assets/imagens/corredor.jpg",
+        "image": "/assets/imagens/corredor.jpg",
         "sfx": "passos",
         "text": (
             "O corredor é estreito demais para uma casa. "
@@ -530,7 +541,7 @@ SCENES = {
     },
     "corredor_mais": {
         "title": "Outros caminhos",
-        "image": "assets/imagens/corredor.jpg",
+        "image": "/assets/imagens/corredor.jpg",
         "text": (
             "A porta dos fundos range com o vento.\n"
             "No escuro do corredor, alguém espera ser chamado pelo nome."
@@ -543,7 +554,7 @@ SCENES = {
     },
     "escadas": {
         "title": "As escadas",
-        "image": "assets/imagens/corredor.jpg",
+        "image": "/assets/imagens/corredor.jpg",
         "sfx": "passos",
         "text": (
             "A escada sobe para o sótão empoeirado.\n"
@@ -558,7 +569,7 @@ SCENES = {
     },
     "eco_responde": {
         "title": "Sua voz responde",
-        "image": "assets/imagens/eco_responde.jpg",
+        "image": "/assets/imagens/eco_responde.jpg",
         "text": (
             "Você engole seco e grita: \"Tem alguém aí?\"\n\n"
             "O silêncio engorda. Então, do fundo do corredor, "
@@ -573,7 +584,7 @@ SCENES = {
     },
     "jardim": {
         "title": "O jardim",
-        "image": "assets/imagens/jardim.jpg",
+        "image": "/assets/imagens/jardim.jpg",
         "sfx": "passos",
         "text": (
             "O quintal está morto, mas a terra ainda cheira a chuva de infância.\n\n"
@@ -588,7 +599,7 @@ SCENES = {
     },
     "item_pedra": {
         "title": "Pedra do jardim",
-        "image": "assets/imagens/jardim.jpg",
+        "image": "/assets/imagens/jardim.jpg",
         "text": (
             "Você guarda a pedra. O apelido queima na palma como se ainda estivesse quente.\n\n"
             "A casa parece ter ouvido o próprio nome."
@@ -600,7 +611,7 @@ SCENES = {
     },
     "cozinha": {
         "title": "A cozinha",
-        "image": "assets/imagens/cozinha.jpg",
+        "image": "/assets/imagens/cozinha.jpg",
         "text": (
             "A cozinha cheira a gás antigo e laranja podre.\n\n"
             "Na pia, um prato com comida ainda quente. "
@@ -616,7 +627,7 @@ SCENES = {
     },
     "cozinha_vazia": {
         "title": "A cozinha",
-        "image": "assets/imagens/cozinha.jpg",
+        "image": "/assets/imagens/cozinha.jpg",
         "text": (
             "A gaveta da esquerda está aberta e vazia. "
             "Você já pegou os fósforos.\n\n"
@@ -628,7 +639,7 @@ SCENES = {
     },
     "comida_quente": {
         "title": "A segunda mão",
-        "image": "assets/imagens/cozinha.jpg",
+        "image": "/assets/imagens/cozinha.jpg",
         "text": (
             "Você encosta o dedo no arroz. Escaldante.\n\n"
             "Por um instante, vê uma segunda mão — a sua, mais nova — "
@@ -642,7 +653,7 @@ SCENES = {
     },
     "item_fosforos": {
         "title": "Três chances",
-        "image": "assets/imagens/cozinha.jpg",
+        "image": "/assets/imagens/cozinha.jpg",
         "text": (
             "Você guarda os fósforos. A caixa é leve demais — quase vazia.\n\n"
             "Dentro, restam três palitos. Três chances."
@@ -653,7 +664,7 @@ SCENES = {
     },
     "sala": {
         "title": "A sala",
-        "image": "assets/imagens/sala.jpg",
+        "image": "/assets/imagens/sala.jpg",
         "text": (
             "A sala está coberta. O sofá usa um lençol branco manchado de amarelo. "
             "Relógios parados. Poeira em camadas.\n\n"
@@ -670,7 +681,7 @@ SCENES = {
     },
     "sala_pista": {
         "title": "A sala — o rosto",
-        "image": "assets/imagens/tv_estatica.jpg",
+        "image": "/assets/imagens/tv_estatica.jpg",
         "text": (
             "A TV liga sozinha. Estática.\n\n"
             "No meio do ruído branco, um rosto se forma — o seu, mais novo, "
@@ -687,7 +698,7 @@ SCENES = {
     },
     "quarto_pais": {
         "title": "Quarto dos pais",
-        "image": "assets/imagens/quarto_pais.jpg",
+        "image": "/assets/imagens/quarto_pais.jpg",
         "sfx": "porta",
         "text": (
             "A porta cede com a chave enferrujada. O quarto cheira a perfume velho.\n\n"
@@ -703,7 +714,7 @@ SCENES = {
     },
     "quarto_pais_trancado": {
         "title": "Porta trancada",
-        "image": "assets/imagens/quarto_pais.jpg",
+        "image": "/assets/imagens/quarto_pais.jpg",
         "sfx": "porta",
         "text": (
             "A porta do quarto dos pais não abre.\n"
@@ -715,7 +726,7 @@ SCENES = {
     },
     "bilhete_pais": {
         "title": "O apelido",
-        "image": "assets/imagens/quarto_pais.jpg",
+        "image": "/assets/imagens/quarto_pais.jpg",
         "text": (
             "No verso do bilhete, a letra da sua mãe:\n"
             "\"Casinha. Sempre foi Casinha.\"\n\n"
@@ -728,7 +739,7 @@ SCENES = {
     },
     "enigma": {
         "title": "O enigma",
-        "image": "assets/imagens/enigma.jpg",
+        "image": "/assets/imagens/enigma.jpg",
         "text": (
             "No papel: três linhas.\n\n"
             "1) O que acende sem ser luz.\n"
@@ -745,7 +756,7 @@ SCENES = {
     },
     "enigma_ok": {
         "title": "A casa reconhece",
-        "image": "assets/imagens/enigma.jpg",
+        "image": "/assets/imagens/enigma.jpg",
         "text": (
             "O envelope aquece e solta um cheiro de cera.\n\n"
             "Você acertou a ordem. A casa suspira — um assoalho rangendo longe.\n"
@@ -758,7 +769,7 @@ SCENES = {
     },
     "enigma_falha": {
         "title": "Ordem errada",
-        "image": "assets/imagens/enigma.jpg",
+        "image": "/assets/imagens/enigma.jpg",
         "text": (
             "O papel queima nas bordas sem chama.\n\n"
             "Uma dor seca sobe pelo braço. A casa não gosta de mentiras.\n\n"
@@ -771,7 +782,7 @@ SCENES = {
     },
     "item_chave": {
         "title": "Chave enferrujada",
-        "image": "assets/imagens/sala.jpg",
+        "image": "/assets/imagens/sala.jpg",
         "text": (
             "A gaveta range. Dentro: uma chave enferrujada, quente ao toque.\n\n"
             "Na alça, um pedaço de fita isolante com a palavra PORÃO.\n\n"
@@ -784,7 +795,7 @@ SCENES = {
     },
     "tv_estatica": {
         "title": "Estática",
-        "image": "assets/imagens/tv_estatica.jpg",
+        "image": "/assets/imagens/tv_estatica.jpg",
         "sfx": "tv",
         "text": (
             "Você liga a TV. Só estática.\n\n"
@@ -798,7 +809,7 @@ SCENES = {
     },
     "tv_aviso": {
         "title": "Você deixou alguém",
-        "image": "assets/imagens/tv_estatica.jpg",
+        "image": "/assets/imagens/tv_estatica.jpg",
         "sfx": "tv",
         "text": (
             "Você se aproxima da tela. O rosto de criança abre a boca.\n\n"
@@ -813,7 +824,7 @@ SCENES = {
     },
     "sotao_escuro": {
         "title": "Sótão sem luz",
-        "image": "assets/imagens/sotao.jpg",
+        "image": "/assets/imagens/sotao.jpg",
         "text": (
             "Está escuro demais. Suas mãos encontram arestas, teias, "
             "algo macio que pode ser um casaco… ou não.\n\n"
@@ -826,7 +837,7 @@ SCENES = {
     },
     "sotao_queda": {
         "title": "Queda no escuro",
-        "image": "assets/imagens/sotao.jpg",
+        "image": "/assets/imagens/sotao.jpg",
         "text": (
             "Você avança. O pé encontra o vazio entre duas tábuas.\n\n"
             "Você cai de joelho. Algo — uma unha? um fio? — raspa seu tornozelo.\n\n"
@@ -838,7 +849,7 @@ SCENES = {
     },
     "sotao": {
         "title": "O sótão",
-        "image": "assets/imagens/sotao.jpg",
+        "image": "/assets/imagens/sotao.jpg",
         "text": (
             "Você risca um fósforo. A chama treme e revela o sótão em pedaços laranja:\n"
             "caixas, um gravador de fita cassete, uma vela branca sem usar."
@@ -851,7 +862,7 @@ SCENES = {
     },
     "sotao_pista": {
         "title": "O sótão — eco da fita",
-        "image": "assets/imagens/sotao.jpg",
+        "image": "/assets/imagens/sotao.jpg",
         "text": (
             "A voz da criança na fita ainda parece ecoar pelas vigas.\n\n"
             "Você pode descer seguindo o eco — até o espelho — "
@@ -866,8 +877,8 @@ SCENES = {
     },
     "fita_memoria": {
         "title": "EU / OUTRO",
-        "image": "assets/imagens/fita.jpg",
-        "video": "assets/videos/fita_memoria.mp4",
+        "image": "/assets/imagens/fita.jpg",
+        "video": "/assets/videos/fita_memoria.mp4",
         "video_autoplay": False,
         "text": (
             "Você aperta play. Chiado. Então uma voz de criança — a sua — sussurra:\n\n"
@@ -883,7 +894,7 @@ SCENES = {
     },
     "item_vela": {
         "title": "A vela",
-        "image": "assets/imagens/sotao.jpg",
+        "image": "/assets/imagens/sotao.jpg",
         "text": (
             "Você guarda a vela. A cera está fria, mas o pavio cheira a fumaça recente — "
             "como se alguém tivesse apagado agora."
@@ -895,7 +906,7 @@ SCENES = {
     },
     "porta_trancada": {
         "title": "Porão trancado",
-        "image": "assets/imagens/porta_falha.jpg",
+        "image": "/assets/imagens/porta_falha.jpg",
         "sfx": "porta",
         "text": (
             "A porta do porão está trancada. "
@@ -909,7 +920,7 @@ SCENES = {
     },
     "porta_falha": {
         "title": "A porta reage",
-        "image": "assets/imagens/porta_falha.jpg",
+        "image": "/assets/imagens/porta_falha.jpg",
         "sfx": "porta",
         "text": (
             "Você empurra com o ombro. A madeira geme, mas não cede.\n\n"
@@ -923,7 +934,7 @@ SCENES = {
     },
     "porao_escuro": {
         "title": "Porão sem luz",
-        "image": "assets/imagens/porao.jpg",
+        "image": "/assets/imagens/porao.jpg",
         "text": (
             "Sem luz, o chão some. Você tropeça numa caixa. "
             "O joelho bate no concreto.\n\n"
@@ -937,7 +948,7 @@ SCENES = {
     },
     "porao": {
         "title": "O porão",
-        "image": "assets/imagens/porao.jpg",
+        "image": "/assets/imagens/porao.jpg",
         "text": (
             "Você risca um fósforo. A chama mostra a inscrição nas paredes:\n"
             "o seu nome, repetido, e abaixo: \"ELE FICOU.\"\n\n"
@@ -953,7 +964,7 @@ SCENES = {
     },
     "item_foto": {
         "title": "A foto rasgada",
-        "image": "assets/imagens/porao.jpg",
+        "image": "/assets/imagens/porao.jpg",
         "text": (
             "A foto mostra a casa intacta, ensolarada.\n\n"
             "No jardim, uma criança — você — sorri. "
@@ -968,8 +979,8 @@ SCENES = {
     },
     "dialogo_eco": {
         "title": "Diálogo com o eco",
-        "image": "assets/imagens/dialogo_eco.jpg",
-        "audio": "assets/audios/trilha_espelho.mp3",
+        "image": "/assets/imagens/dialogo_eco.jpg",
+        "audio": "/assets/audios/trilha_espelho.mp3",
         "text": (
             "Antes do confronto, o vidro embacia.\n\n"
             "O eco inclina a cabeça — o seu gesto, atrasado — e pergunta:\n"
@@ -985,8 +996,8 @@ SCENES = {
     },
     "espelho": {
         "title": "O espelho",
-        "image": "assets/imagens/espelho.jpg",
-        "audio": "assets/audios/trilha_espelho.mp3",
+        "image": "/assets/imagens/espelho.jpg",
+        "audio": "/assets/audios/trilha_espelho.mp3",
         "text": (
             "O doppelgänger está do outro lado do vidro, sorrindo com o seu sorriso.\n\n"
             "Ele fala primeiro — com a sua voz, meio segundo atrasada:\n"
@@ -1002,8 +1013,8 @@ SCENES = {
     },
     "espelho_sem_pista": {
         "title": "Sem lembrar",
-        "image": "assets/imagens/espelho.jpg",
-        "audio": "assets/audios/trilha_espelho.mp3",
+        "image": "/assets/imagens/espelho.jpg",
+        "audio": "/assets/audios/trilha_espelho.mp3",
         "text": (
             "O espelho te engole com a própria imagem.\n\n"
             "Sem lembrar por que veio, você só vê o sorriso atrasado. "
@@ -1013,7 +1024,7 @@ SCENES = {
     },
     "fuga_falha": {
         "title": "A porta não cede",
-        "image": "assets/imagens/corredor.jpg",
+        "image": "/assets/imagens/corredor.jpg",
         "text": (
             "Você corre. Sem chave, sem luz.\n\n"
             "A porta da frente está trancada por dentro. "
@@ -1023,7 +1034,7 @@ SCENES = {
     },
     "verdade_falha": {
         "title": "A frase sem peso",
-        "image": "assets/imagens/espelho.jpg",
+        "image": "/assets/imagens/espelho.jpg",
         "text": (
             "Você grita: \"Você não é eu!\"\n\n"
             "O eco ri com a sua garganta. Sem a fita e a foto, a frase não tem peso.\n"
@@ -1033,7 +1044,7 @@ SCENES = {
     },
     "ritual_falha": {
         "title": "Falta algo",
-        "image": "assets/imagens/espelho.jpg",
+        "image": "/assets/imagens/espelho.jpg",
         "text": (
             "Você tenta o ritual, mas falta a vela, os fósforos ou a memória da fita.\n\n"
             "O eco sorri. A casa não perdoa improvisos."
@@ -1044,8 +1055,8 @@ SCENES = {
     },
     "fim_fuga": {
         "title": "FINAL — FUGA AMBÍGUA",
-        "image": "assets/imagens/fim_fuga.jpg",
-        "audio": "assets/audios/trilha_casa.mp3",
+        "image": "/assets/imagens/fim_fuga.jpg",
+        "audio": "/assets/audios/trilha_casa.mp3",
         "text": (
             "Você corre. A porta da frente cede. A noite lá fora é real.\n\n"
             "Você olha para trás. A casa está quieta. Então, no seu antigo quarto, "
@@ -1058,8 +1069,8 @@ SCENES = {
     },
     "fim_verdade": {
         "title": "FINAL — VERDADE",
-        "image": "assets/imagens/fim_verdade.jpg",
-        "audio": "assets/audios/trilha_amanhecer.mp3",
+        "image": "/assets/imagens/fim_verdade.jpg",
+        "audio": "/assets/audios/trilha_amanhecer.mp3",
         "text": (
             "Você segura a foto e a memória da fita.\n"
             "\"Você não é eu. Você é o que eu deixei.\"\n\n"
@@ -1072,7 +1083,7 @@ SCENES = {
     },
     "fim_eco": {
         "title": "FINAL — O ECO SAI",
-        "image": "assets/imagens/fim_eco.jpg",
+        "image": "/assets/imagens/fim_eco.jpg",
         "stop_audio": True,
         "text": (
             "Você encosta a mão no vidro. O eco encosta a dele.\n\n"
@@ -1085,8 +1096,8 @@ SCENES = {
     },
     "fim_ritual": {
         "title": "FINAL SECRETO — RITUAL",
-        "image": "assets/imagens/fim_ritual.jpg",
-        "audio": "assets/audios/trilha_amanhecer.mp3",
+        "image": "/assets/imagens/fim_ritual.jpg",
+        "audio": "/assets/audios/trilha_amanhecer.mp3",
         "text": (
             "Você risca o fósforo. A vela acende.\n\n"
             "A chama mostra o eco como ele é: pequeno, assustado, "
@@ -1100,7 +1111,7 @@ SCENES = {
     },
     "fim_ruim": {
         "title": "FINAL — MORTE",
-        "image": "assets/imagens/fim_morte.jpg",
+        "image": "/assets/imagens/fim_morte.jpg",
         "stop_audio": True,
         "text": (
             "A escuridão fecha como uma boca.\n\n"
@@ -1113,7 +1124,7 @@ SCENES = {
     },
     "fim_atrasado": {
         "title": "FINAL — A CASA ESCOLHE",
-        "image": "assets/imagens/fim_atrasado.jpg",
+        "image": "/assets/imagens/fim_atrasado.jpg",
         "stop_audio": True,
         "text": (
             "Quinze.\n\n"

@@ -8,21 +8,25 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=IBM+Plex+Mono:wght@400;500&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Literata:ital,opsz,wght@0,7..72,500;0,7..72,650;1,7..72,500&family=IBM+Plex+Mono:wght@400;500&display=swap"
       rel="stylesheet"
     />
+    <link rel="preload" as="image" href="/assets/imagens/corredor.webp" type="image/webp" />
+    <link rel="preload" as="image" href="/assets/imagens/inicio.webp" type="image/webp" />
     <link rel="stylesheet" href="https://pyscript.net/releases/2025.3.1/core.css" />
     <script type="module" src="https://pyscript.net/releases/2025.3.1/core.js"></script>
     <style>
       :root {
         --bg: #050306;
-        --ink: #e6ddd0;
-        --muted: #8a8178;
+        --ink: #f2ebe1;
+        --muted: #9a9086;
         --blood: #7a1f28;
-        --blood-hot: #c43340;
-        --panel: rgba(8, 6, 8, 0.78);
-        --line: rgba(196, 64, 72, 0.28);
+        --blood-hot: #d03a46;
+        --panel: rgba(8, 6, 8, 0.88);
+        --line: rgba(196, 64, 72, 0.32);
         --glow: rgba(160, 32, 40, 0.35);
+        --font-story: "Literata", "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+        --font-ui: "IBM Plex Mono", "SFMono-Regular", Menlo, Consolas, monospace;
       }
 
       * { box-sizing: border-box; }
@@ -33,18 +37,26 @@
         height: 100%;
         background: var(--bg);
         color: var(--ink);
-        font-family: "Cormorant Garamond", Georgia, serif;
+        font-family: var(--font-story);
         overflow: hidden;
+        overscroll-behavior: none;
+        -webkit-font-smoothing: antialiased;
+        text-rendering: optimizeLegibility;
       }
 
       body {
         min-height: 100dvh;
         background:
-          radial-gradient(ellipse 80% 55% at 50% 0%, rgba(90, 18, 28, 0.35), transparent 55%),
+          radial-gradient(ellipse 80% 55% at 50% 0%, rgba(90, 18, 28, 0.28), transparent 55%),
           var(--bg);
       }
 
       .hidden { display: none !important; }
+
+      button {
+        -webkit-tap-highlight-color: transparent;
+        touch-action: manipulation;
+      }
 
       /* ---------- LOADING ---------- */
       #loading {
@@ -54,9 +66,9 @@
         display: grid;
         place-items: center;
         background: #050306;
-        font-family: "IBM Plex Mono", monospace;
+        font-family: var(--font-ui);
         font-size: 0.78rem;
-        letter-spacing: 0.18em;
+        letter-spacing: 0.14em;
         text-transform: uppercase;
         color: var(--muted);
       }
@@ -80,21 +92,32 @@
         position: absolute;
         inset: 0;
         background:
-          linear-gradient(180deg, rgba(5,3,6,0.2) 0%, rgba(5,3,6,0.25) 35%, rgba(5,3,6,0.88) 72%, #050306 100%),
-          center / cover no-repeat url("assets/imagens/corredor.jpg");
-        filter: brightness(0.72) contrast(1.18) saturate(0.85);
-        animation: kenBurns 28s ease-in-out infinite alternate;
+          linear-gradient(180deg, rgba(5,3,6,0.18) 0%, rgba(5,3,6,0.28) 40%, rgba(5,3,6,0.9) 74%, #050306 100%),
+          center / cover no-repeat url("/assets/imagens/corredor.webp");
+        background-image:
+          linear-gradient(180deg, rgba(5,3,6,0.18) 0%, rgba(5,3,6,0.28) 40%, rgba(5,3,6,0.9) 74%, #050306 100%),
+          image-set(
+            url("/assets/imagens/corredor.webp") type("image/webp"),
+            url("/assets/imagens/corredor.jpg") type("image/jpeg")
+          );
+        background-position: center;
+        background-size: cover;
+        background-repeat: no-repeat;
+        transform: scale(1.04);
         transform-origin: center 40%;
+      }
+
+      @media (min-width: 900px) and (prefers-reduced-motion: no-preference) {
+        #boot-bg {
+          animation: kenBurns 32s ease-in-out infinite alternate;
+        }
       }
 
       #boot-vignette {
         position: absolute;
         inset: 0;
         pointer-events: none;
-        background:
-          radial-gradient(ellipse at center, transparent 20%, rgba(0,0,0,0.55) 100%),
-          repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.04) 3px);
-        animation: flicker 7s infinite;
+        background: radial-gradient(ellipse at center, transparent 25%, rgba(0,0,0,0.55) 100%);
       }
 
       #boot-content {
@@ -124,24 +147,26 @@
 
       #boot-title {
         margin: 0;
-        font-size: clamp(2.6rem, 7vw, 4.2rem);
-        font-weight: 700;
-        letter-spacing: 0.01em;
-        line-height: 0.92;
+        font-size: clamp(2.4rem, 7vw, 4rem);
+        font-weight: 650;
+        letter-spacing: -0.01em;
+        line-height: 0.94;
         text-shadow: 0 0 40px var(--glow), 0 8px 30px rgba(0,0,0,0.8);
       }
 
       #boot-sub {
         margin: 0.55rem 0 0;
-        color: #b9aea2;
+        color: #cfc4b8;
         font-style: italic;
-        font-size: clamp(1.05rem, 2.4vw, 1.3rem);
+        font-weight: 500;
+        font-size: clamp(1.08rem, 2.5vw, 1.35rem);
+        line-height: 1.35;
         max-width: 28ch;
       }
 
       #boot-author {
         margin: 0.55rem 0 0;
-        font-family: "IBM Plex Mono", monospace;
+        font-family: var(--font-ui);
         font-size: 0.72rem;
         letter-spacing: 0.16em;
         text-transform: uppercase;
@@ -173,7 +198,7 @@
 
       #ranking-box > p {
         margin: 0 0 0.4rem;
-        font-family: "IBM Plex Mono", monospace;
+        font-family: var(--font-ui);
         font-size: 0.62rem;
         letter-spacing: 0.14em;
         text-transform: uppercase;
@@ -183,7 +208,7 @@
       #ranking-lista {
         margin: 0;
         padding-left: 1.1rem;
-        font-family: "IBM Plex Mono", monospace;
+        font-family: var(--font-ui);
         font-size: 0.7rem;
         color: var(--muted);
       }
@@ -211,12 +236,21 @@
         width: 100%;
         height: 100%;
         object-fit: cover;
+        object-position: center;
         display: block;
+        background: #0a0708;
       }
 
       #cena-imagem {
-        animation: kenBurnsSlow 22s ease-in-out infinite alternate;
+        opacity: 1;
+        transform: scale(1.02);
         transform-origin: 50% 40%;
+      }
+
+      @media (min-width: 900px) and (prefers-reduced-motion: no-preference) {
+        #cena-imagem.anim-on {
+          animation: kenBurnsSlow 26s ease-in-out infinite alternate;
+        }
       }
 
       #cena-imagem.is-fade,
@@ -224,7 +258,7 @@
 
       #cena-imagem,
       #cena-video {
-        transition: opacity 420ms ease;
+        transition: opacity 280ms ease;
       }
 
       #stage-fx {
@@ -233,18 +267,8 @@
         pointer-events: none;
         z-index: 2;
         background:
-          linear-gradient(180deg, rgba(0,0,0,0.45) 0%, transparent 22%, transparent 48%, rgba(0,0,0,0.82) 100%),
-          radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.55) 100%);
-      }
-
-      #stage-grain {
-        position: absolute;
-        inset: 0;
-        z-index: 3;
-        pointer-events: none;
-        opacity: 0.08;
-        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-        mix-blend-mode: overlay;
+          linear-gradient(180deg, rgba(0,0,0,0.5) 0%, transparent 20%, transparent 52%, rgba(0,0,0,0.84) 100%),
+          radial-gradient(ellipse at center, transparent 42%, rgba(0,0,0,0.5) 100%);
       }
 
       #flash-dano {
@@ -272,7 +296,7 @@
         gap: 0.75rem;
         padding: max(0.65rem, env(safe-area-inset-top)) 0.9rem 0.65rem;
         background: linear-gradient(180deg, rgba(0,0,0,0.75), transparent);
-        font-family: "IBM Plex Mono", monospace;
+        font-family: var(--font-ui);
       }
 
       #hud-brand {
@@ -284,10 +308,10 @@
 
       #titulo-jogo {
         margin: 0;
-        font-family: "Cormorant Garamond", Georgia, serif;
-        font-size: clamp(1rem, 2.4vw, 1.25rem);
-        font-weight: 600;
-        letter-spacing: 0.02em;
+        font-family: var(--font-story);
+        font-size: clamp(1.05rem, 2.6vw, 1.35rem);
+        font-weight: 650;
+        letter-spacing: 0.01em;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -335,7 +359,7 @@
 
       #btn-mute,
       #btn-reiniciar {
-        font-family: "IBM Plex Mono", monospace;
+        font-family: var(--font-ui);
         letter-spacing: 0.06em;
         text-transform: uppercase;
         cursor: pointer;
@@ -370,16 +394,25 @@
         pointer-events: auto;
         width: 100%;
         max-width: none;
-        background: linear-gradient(180deg, rgba(8,6,8,0.4), rgba(8,6,8,0.94) 20%);
+        background: rgba(8, 6, 8, 0.94);
         border: none;
         border-top: 1px solid var(--line);
-        backdrop-filter: blur(16px) saturate(1.05);
-        box-shadow: 0 -30px 80px rgba(0,0,0,0.65);
-        padding: 0.55rem clamp(0.85rem, 3vw, 1.5rem) max(0.55rem, env(safe-area-inset-bottom));
+        box-shadow: 0 -24px 60px rgba(0,0,0,0.55);
+        padding: 0.55rem clamp(0.75rem, 3vw, 1.4rem) max(0.55rem, env(safe-area-inset-bottom));
         display: grid;
         grid-template-columns: 1fr;
         gap: 0.4rem;
-        animation: dockIn 0.45s ease both;
+        animation: dockIn 0.4s ease both;
+      }
+
+      @supports ((backdrop-filter: blur(8px)) or (-webkit-backdrop-filter: blur(8px))) {
+        @media (min-width: 900px) {
+          #painel {
+            background: linear-gradient(180deg, rgba(8,6,8,0.58), rgba(8,6,8,0.94) 24%);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+          }
+        }
       }
 
       #painel.is-swap {
@@ -410,7 +443,7 @@
 
       #cena-titulo {
         margin: 0;
-        font-family: "IBM Plex Mono", monospace;
+        font-family: var(--font-ui);
         font-size: 0.72rem;
         letter-spacing: 0.16em;
         text-transform: uppercase;
@@ -419,11 +452,14 @@
 
       #cena-texto {
         margin: 0;
-        max-height: min(18vh, 140px);
+        max-height: min(22vh, 160px);
         overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
         white-space: pre-wrap;
-        font-size: clamp(1.12rem, 2.2vw, 1.32rem);
-        line-height: 1.28;
+        font-size: clamp(1.14rem, 2.4vw, 1.38rem);
+        font-weight: 500;
+        line-height: 1.38;
+        letter-spacing: 0.01em;
         color: var(--ink);
       }
 
@@ -436,7 +472,7 @@
       }
 
       .inv-chip {
-        font-family: "IBM Plex Mono", monospace;
+        font-family: var(--font-ui);
         font-size: 0.62rem;
         letter-spacing: 0.04em;
         text-transform: uppercase;
@@ -456,7 +492,7 @@
       .opt-btn,
       #btn-iniciar,
       #btn-continuar {
-        font-family: "IBM Plex Mono", monospace;
+        font-family: var(--font-ui);
         letter-spacing: 0.05em;
         text-transform: uppercase;
         cursor: pointer;
@@ -563,19 +599,42 @@
       }
 
       @media (max-height: 700px) {
-        #cena-texto { max-height: 18vh; font-size: 1.05rem; }
+        #cena-texto { max-height: 16vh; font-size: 1.08rem; }
+        #boot-title { font-size: clamp(2rem, 8vw, 2.8rem); }
       }
 
       @media (max-width: 720px) {
         #boot-content {
           grid-template-columns: 1fr;
           text-align: left;
-          gap: 0.85rem;
+          gap: 0.75rem;
+          padding: 0.9rem 0.9rem max(0.9rem, env(safe-area-inset-bottom));
         }
         #opcoes { grid-template-columns: 1fr; }
-        #hud-stats { max-width: 68%; }
-        .stat-pill { font-size: 0.58rem; padding: 0.22rem 0.4rem; }
-        .opt-btn { font-size: 0.68rem; min-height: 44px; }
+        #hud {
+          padding-top: max(0.55rem, env(safe-area-inset-top));
+          gap: 0.45rem;
+        }
+        #hud-stats { max-width: 100%; }
+        .stat-pill { font-size: 0.6rem; padding: 0.28rem 0.42rem; }
+        .opt-btn {
+          font-size: 0.72rem;
+          min-height: 48px;
+          letter-spacing: 0.04em;
+        }
+        #cena-texto {
+          max-height: min(28vh, 200px);
+          font-size: 1.16rem;
+          line-height: 1.4;
+        }
+        #btn-iniciar, #btn-continuar { min-height: 52px; font-size: 0.84rem; }
+        #painel.is-swap { animation: none; }
+        .opt-btn.show { transition-delay: 0s !important; }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        #boot-bg, #cena-imagem, #loading span, .stat-pill.vida.low { animation: none !important; }
+        #painel, #painel.is-swap, .opt-btn, .inv-chip { animation: none !important; transition: none !important; }
       }
     </style>
   </head>
@@ -607,10 +666,9 @@
 
     <div id="app">
       <div id="stage">
-        <img id="cena-imagem" alt="" />
-        <video id="cena-video" class="hidden" playsinline></video>
+        <img id="cena-imagem" alt="" decoding="async" fetchpriority="high" />
+        <video id="cena-video" class="hidden" playsinline preload="none" muted></video>
         <div id="stage-fx"></div>
-        <div id="stage-grain"></div>
         <div id="flash-dano"></div>
       </div>
 
@@ -630,9 +688,11 @@
       <div id="dock">
         <section id="painel">
           <div id="narrativa">
-            <h2 id="cena-titulo"></h2>
+            <div id="narrativa-top">
+              <h2 id="cena-titulo"></h2>
+              <div id="inv-bar" aria-label="Inventário"></div>
+            </div>
             <p id="cena-texto"></p>
-            <div id="inv-bar" aria-label="Inventário"></div>
             <div id="status" class="hidden">
               <span>Inventário: <strong id="stat-inv">nada</strong></span>
             </div>
@@ -651,7 +711,7 @@
         </section>
       </div>
 
-      <audio id="audio-player" loop preload="auto"></audio>
+      <audio id="audio-player" loop preload="none"></audio>
     </div>
 
     <script>
@@ -660,6 +720,47 @@
         let muted = false;
         let unlocked = false;
         let currentSrc = "";
+        const preloadCache = new Set();
+        const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        const isMobile = window.matchMedia("(max-width: 720px)").matches;
+
+        function absUrl(src) {
+          if (!src) return "";
+          src = String(src).trim();
+          if (/^https?:\/\//i.test(src) || src.startsWith("/")) return src;
+          return "/" + src.replace(/^\.\//, "");
+        }
+
+        function webpOf(src) {
+          const u = absUrl(src);
+          if (!u) return "";
+          return u.replace(/\.jpe?g$/i, ".webp").replace(/\.png$/i, ".webp");
+        }
+
+        function preload(src) {
+          const u = absUrl(src);
+          if (!u || preloadCache.has(u)) return;
+          preloadCache.add(u);
+          const img = new Image();
+          img.decoding = "async";
+          const w = webpOf(u);
+          img.onerror = function () {
+            if (w && this.src.indexOf(".webp") !== -1) {
+              this.onerror = null;
+              this.src = u;
+            }
+          };
+          img.src = w || u;
+        }
+
+        // Pré-carrega cenas mais usadas
+        [
+          "/assets/imagens/corredor.webp",
+          "/assets/imagens/inicio.webp",
+          "/assets/imagens/cozinha.webp",
+          "/assets/imagens/sala.webp",
+          "/assets/imagens/jardim.webp",
+        ].forEach(preload);
 
         function syncMuteButton() {
           const btn = document.getElementById("btn-mute");
@@ -673,9 +774,8 @@
           const a = bgm();
           if (!a) return;
           try {
-            // gesto do usuário: “abre” o áudio no navegador
             a.muted = true;
-            a.src = "assets/audios/sfx_click.mp3";
+            a.src = "/assets/audios/sfx_click.mp3";
             await a.play();
             a.pause();
             a.currentTime = 0;
@@ -688,20 +788,22 @@
         }
 
         window.tocarSfx = function (src) {
+          src = absUrl(src);
           if (!src || muted) return;
           try {
             const s = new Audio(src);
-            s.volume = 0.6;
+            s.volume = 0.55;
             const p = s.play();
             if (p && p.catch) p.catch(() => {});
           } catch (e) {}
         };
 
         window.tocarTrilha = function (src, volume) {
+          src = absUrl(src);
           if (!src) return;
           const a = bgm();
           if (!a) return;
-          const vol = typeof volume === "number" ? volume : 0.48;
+          const vol = typeof volume === "number" ? volume : 0.55;
           a.volume = muted ? 0 : vol;
           a.loop = true;
           if (currentSrc !== src) {
@@ -710,12 +812,7 @@
             try { a.load(); } catch (e) {}
           }
           const p = a.play();
-          if (p && p.catch) {
-            p.catch(() => {
-              // tenta de novo após gesto
-              unlocked = false;
-            });
-          }
+          if (p && p.catch) p.catch(() => { unlocked = false; });
         };
 
         window.pararTrilha = function () {
@@ -730,6 +827,7 @@
         };
 
         window.flashDano = function () {
+          if (reducedMotion || isMobile) return;
           const el = document.getElementById("flash-dano");
           if (!el) return;
           el.classList.remove("on");
@@ -738,6 +836,7 @@
         };
 
         window.animarPainel = function () {
+          if (reducedMotion || isMobile) return;
           const painel = document.getElementById("painel");
           if (!painel) return;
           painel.classList.remove("is-swap");
@@ -749,8 +848,6 @@
           for (let i = 0; i < 4; i++) {
             const btn = document.getElementById("opt-" + i);
             if (!btn || btn.classList.contains("hidden")) continue;
-            btn.classList.remove("show");
-            void btn.offsetWidth;
             btn.classList.add("show");
           }
         };
@@ -761,16 +858,10 @@
           bar.innerHTML = "";
           let list = [];
           try {
-            if (typeof itens === "string") {
-              list = JSON.parse(itens);
-            } else if (Array.isArray(itens)) {
-              list = itens;
-            } else if (itens && typeof itens.length === "number") {
-              list = Array.from(itens);
-            }
-          } catch (e) {
-            list = [];
-          }
+            if (typeof itens === "string") list = JSON.parse(itens);
+            else if (Array.isArray(itens)) list = itens;
+            else if (itens && typeof itens.length === "number") list = Array.from(itens);
+          } catch (e) { list = []; }
           if (!list.length) {
             const empty = document.createElement("span");
             empty.className = "inv-chip";
@@ -779,45 +870,92 @@
             bar.appendChild(empty);
             return;
           }
-          list.forEach((item, idx) => {
+          list.forEach((item) => {
             const chip = document.createElement("span");
             chip.className = "inv-chip";
-            chip.style.animationDelay = idx * 40 + "ms";
             chip.textContent = String(item);
             bar.appendChild(chip);
           });
         };
 
+        function setStageImage(img, jpgOrPath) {
+          const jpg = absUrl(jpgOrPath);
+          const webp = webpOf(jpg);
+          img.classList.remove("hidden");
+          img.classList.remove("anim-on");
+
+          const finish = () => {
+            img.classList.remove("is-fade");
+            if (!reducedMotion && !isMobile) img.classList.add("anim-on");
+          };
+
+          const apply = (src) => {
+            if (img.getAttribute("src") === src && img.complete && img.naturalWidth > 0) {
+              finish();
+              return;
+            }
+            const onLoad = () => {
+              img.removeEventListener("load", onLoad);
+              finish();
+            };
+            img.addEventListener("load", onLoad);
+            img.onerror = function () {
+              img.onerror = null;
+              if (src !== jpg && jpg) {
+                img.addEventListener("load", onLoad);
+                img.src = jpg;
+              } else {
+                finish();
+              }
+            };
+            img.src = src;
+            // se já estiver em cache
+            if (img.complete && img.naturalWidth > 0) onLoad();
+          };
+
+          apply(webp || jpg);
+          preload(jpg);
+        }
+
         window.aplicarMidiaCena = function (video, image, videoAutoplay) {
           const img = document.getElementById("cena-imagem");
           const vid = document.getElementById("cena-video");
           if (!img || !vid) return;
+          video = absUrl(video);
+          image = absUrl(image);
+
           img.classList.add("is-fade");
           vid.classList.add("is-fade");
-          setTimeout(() => {
-            if (video) {
+
+          const swap = () => {
+            // No mobile/desktop: usa imagem por padrão.
+            // Vídeo só carrega se autoplay estiver ativo (mais leve e evita tela preta).
+            const useVideo = !!(video && videoAutoplay);
+            if (useVideo) {
               img.classList.add("hidden");
+              img.removeAttribute("src");
               vid.classList.remove("hidden");
-              vid.src = video;
-              if (videoAutoplay) {
-                try { vid.play(); } catch (e) {}
-              } else {
-                try { vid.pause(); } catch (e) {}
+              if (vid.getAttribute("src") !== video) {
+                vid.poster = image || "";
+                vid.src = video;
+                try { vid.load(); } catch (e) {}
               }
+              try { vid.play(); } catch (e) {}
+              img.classList.remove("is-fade");
+              vid.classList.remove("is-fade");
             } else {
-              vid.classList.add("hidden");
               try { vid.pause(); } catch (e) {}
+              vid.classList.add("hidden");
               vid.removeAttribute("src");
-              img.classList.remove("hidden");
-              // reinicia ken burns
-              img.style.animation = "none";
-              void img.offsetWidth;
-              img.style.animation = "";
-              img.src = image || "";
+              vid.removeAttribute("poster");
+              try { vid.load(); } catch (e) {}
+              setStageImage(img, image || "/assets/imagens/capa.jpg");
+              vid.classList.remove("is-fade");
             }
-            img.classList.remove("is-fade");
-            vid.classList.remove("is-fade");
-          }, 180);
+          };
+
+          if (isMobile || reducedMotion) swap();
+          else setTimeout(swap, 120);
         };
 
         function wireUi() {
@@ -828,37 +966,31 @@
 
           async function startWithAudio(fn) {
             await unlockAudio();
-            window.tocarSfx("assets/audios/sfx_click.mp3");
-            window.tocarTrilha("assets/audios/trilha_casa.mp3", 0.48);
+            window.tocarSfx("/assets/audios/sfx_click.mp3");
+            window.tocarTrilha("/assets/audios/trilha_casa.mp3", 0.55);
             if (fn) fn();
           }
 
           if (iniciar) {
             iniciar.addEventListener("click", () => {
-              startWithAudio(() => {
-                if (window.iniciar_jogo) window.iniciar_jogo();
-              });
+              startWithAudio(() => { if (window.iniciar_jogo) window.iniciar_jogo(); });
             });
           }
           if (continuar) {
             continuar.addEventListener("click", () => {
-              startWithAudio(() => {
-                if (window.continuar_jogo) window.continuar_jogo();
-              });
+              startWithAudio(() => { if (window.continuar_jogo) window.continuar_jogo(); });
             });
           }
           if (reiniciar) {
             reiniciar.addEventListener("click", () => {
-              startWithAudio(() => {
-                if (window.reiniciar_aventura) window.reiniciar_aventura();
-              });
+              startWithAudio(() => { if (window.reiniciar_aventura) window.reiniciar_aventura(); });
             });
           }
           if (mute) {
             mute.addEventListener("click", () => {
               muted = !muted;
               const a = bgm();
-              if (a) a.volume = muted ? 0 : 0.48;
+              if (a) a.volume = muted ? 0 : 0.55;
               syncMuteButton();
               if (!muted) unlockAudio();
             });
@@ -869,7 +1001,7 @@
             if (!btn) continue;
             btn.addEventListener("click", () => {
               const acao = btn.getAttribute("data-acao");
-              window.tocarSfx("assets/audios/sfx_click.mp3");
+              window.tocarSfx("/assets/audios/sfx_click.mp3");
               if (acao && window.executar_acao_js) window.executar_acao_js(String(acao));
             });
           }
