@@ -3,477 +3,872 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <meta name="theme-color" content="#030304" />
+    <meta name="theme-color" content="#050306" />
     <title>A Casa que Lembra</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Share+Tech+Mono&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=IBM+Plex+Mono:wght@400;500&display=swap"
       rel="stylesheet"
     />
     <link rel="stylesheet" href="https://pyscript.net/releases/2025.3.1/core.css" />
     <script type="module" src="https://pyscript.net/releases/2025.3.1/core.js"></script>
     <style>
       :root {
-        --bg: #030304;
-        --panel: #0b0b0f;
-        --line: #1a1a20;
-        --text: #c8c4bc;
-        --muted: #6a6660;
-        --blood: #6e1c24;
-        --blood-hot: #a02834;
-        --amber: #8a5a28;
+        --bg: #050306;
+        --ink: #e6ddd0;
+        --muted: #8a8178;
+        --blood: #7a1f28;
+        --blood-hot: #c43340;
+        --panel: rgba(8, 6, 8, 0.78);
+        --line: rgba(196, 64, 72, 0.28);
+        --glow: rgba(160, 32, 40, 0.35);
       }
 
       * { box-sizing: border-box; }
 
       html, body {
         margin: 0;
+        width: 100%;
         height: 100%;
         background: var(--bg);
-        color: var(--text);
+        color: var(--ink);
         font-family: "Cormorant Garamond", Georgia, serif;
         overflow: hidden;
       }
 
       body {
-        display: flex;
-        flex-direction: column;
         min-height: 100dvh;
+        background:
+          radial-gradient(ellipse 80% 55% at 50% 0%, rgba(90, 18, 28, 0.35), transparent 55%),
+          var(--bg);
       }
 
+      .hidden { display: none !important; }
+
+      /* ---------- LOADING ---------- */
+      #loading {
+        position: fixed;
+        inset: 0;
+        z-index: 60;
+        display: grid;
+        place-items: center;
+        background: #050306;
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 0.78rem;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+      #loading.hidden { display: none; }
+      #loading span {
+        animation: pulseSoft 1.4s ease-in-out infinite;
+      }
+
+      /* ---------- BOOT ---------- */
       #boot {
         position: fixed;
         inset: 0;
         z-index: 40;
         display: grid;
-        place-items: center;
-        background: radial-gradient(ellipse at center, #12080c 0%, #030304 70%);
-        padding: 1.25rem;
-        text-align: center;
+        place-items: stretch;
+        overflow: hidden;
       }
-
       #boot.hidden { display: none; }
-      .hidden { display: none !important; }
 
-      #boot-cover {
-        width: min(100%, 420px);
-        aspect-ratio: 16 / 10;
-        object-fit: cover;
-        border: 1px solid #000;
-        margin-bottom: 1rem;
-        filter: brightness(0.7) contrast(1.1);
-        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7);
+      #boot-bg {
+        position: absolute;
+        inset: 0;
+        background:
+          linear-gradient(180deg, rgba(5,3,6,0.2) 0%, rgba(5,3,6,0.25) 35%, rgba(5,3,6,0.88) 72%, #050306 100%),
+          center / cover no-repeat url("assets/imagens/corredor.jpg");
+        filter: brightness(0.72) contrast(1.18) saturate(0.85);
+        animation: kenBurns 28s ease-in-out infinite alternate;
+        transform-origin: center 40%;
       }
 
-      #boot-cover.hidden { display: none; }
+      #boot-vignette {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        background:
+          radial-gradient(ellipse at center, transparent 20%, rgba(0,0,0,0.55) 100%),
+          repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.04) 3px);
+        animation: flicker 7s infinite;
+      }
 
-      #boot-icon { font-size: 2rem; margin: 0 0 0.4rem; }
+      #boot-content {
+        position: relative;
+        z-index: 2;
+        align-self: end;
+        justify-self: stretch;
+        width: 100%;
+        padding: 1.1rem clamp(1rem, 4vw, 2.5rem) 1.35rem;
+        text-align: left;
+        display: grid;
+        grid-template-columns: 1.4fr 0.9fr;
+        gap: 1rem 2rem;
+        align-items: end;
+        background: linear-gradient(180deg, transparent, rgba(0,0,0,0.72) 30%, rgba(0,0,0,0.92));
+        animation: riseIn 0.9s ease both;
+      }
+
+      #boot-copy { min-width: 0; }
+
+      #boot-icon {
+        margin: 0 0 0.2rem;
+        font-size: 1.15rem;
+        color: var(--blood-hot);
+        opacity: 0.9;
+      }
 
       #boot-title {
         margin: 0;
-        font-size: clamp(1.8rem, 6vw, 2.6rem);
-        font-weight: 600;
-        letter-spacing: 0.02em;
+        font-size: clamp(2.6rem, 7vw, 4.2rem);
+        font-weight: 700;
+        letter-spacing: 0.01em;
+        line-height: 0.92;
+        text-shadow: 0 0 40px var(--glow), 0 8px 30px rgba(0,0,0,0.8);
       }
 
       #boot-sub {
-        margin: 0.4rem 0 0;
-        color: var(--muted);
+        margin: 0.55rem 0 0;
+        color: #b9aea2;
         font-style: italic;
-        font-size: 1.15rem;
+        font-size: clamp(1.05rem, 2.4vw, 1.3rem);
+        max-width: 28ch;
       }
 
       #boot-author {
-        margin: 0.75rem 0 1.4rem;
-        font-family: "Share Tech Mono", monospace;
-        font-size: 0.78rem;
-        letter-spacing: 0.12em;
+        margin: 0.55rem 0 0;
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 0.72rem;
+        letter-spacing: 0.16em;
         text-transform: uppercase;
         color: var(--blood-hot);
       }
 
-      #btn-iniciar,
-      #btn-continuar,
-      #btn-reiniciar,
-      .opt-btn {
-        font-family: "Share Tech Mono", monospace;
-        letter-spacing: 0.06em;
-        text-transform: uppercase;
-        cursor: pointer;
-        border: 1px solid var(--blood);
-        background: #12080a;
-        color: var(--text);
-        transition: background 0.15s ease, transform 0.15s ease;
-      }
-
-      #btn-iniciar {
-        min-height: 52px;
-        padding: 0.85rem 1.4rem;
-        font-size: 0.85rem;
-        background: var(--blood);
-      }
-
-      #btn-continuar {
-        min-height: 44px;
-        padding: 0.7rem 1rem;
-        font-size: 0.78rem;
-        background: transparent;
+      #boot-side {
+        display: flex;
+        flex-direction: column;
+        gap: 0.55rem;
+        width: 100%;
       }
 
       #boot-actions {
         display: flex;
         flex-direction: column;
-        gap: 0.5rem;
-        width: min(100%, 320px);
-        margin: 0 auto;
+        gap: 0.45rem;
+        width: 100%;
+        margin: 0;
       }
 
       #ranking-box {
-        margin-top: 1.1rem;
-        width: min(100%, 360px);
+        margin-top: 0;
         text-align: left;
+        background: rgba(0,0,0,0.45);
+        border: 1px solid var(--line);
+        padding: 0.55rem 0.7rem;
       }
 
       #ranking-box > p {
-        font-family: "Share Tech Mono", monospace;
-        font-size: 0.65rem;
-        letter-spacing: 0.12em;
+        margin: 0 0 0.4rem;
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 0.62rem;
+        letter-spacing: 0.14em;
         text-transform: uppercase;
         color: var(--blood-hot);
-        margin: 0 0 0.4rem;
       }
 
       #ranking-lista {
         margin: 0;
-        padding-left: 1.2rem;
-        font-family: "Share Tech Mono", monospace;
-        font-size: 0.72rem;
-        color: var(--muted);
-      }
-
-      #btn-iniciar:hover,
-      #btn-continuar:hover,
-      #btn-reiniciar:hover,
-      .opt-btn:hover {
-        background: var(--blood-hot);
-        color: #fff;
-      }
-
-      #app {
-        flex: 1;
-        display: none;
-        flex-direction: column;
-        min-height: 0;
-        max-width: 1200px;
-        width: 100%;
-        margin: 0 auto;
-        padding: 0.75rem;
-        gap: 0.65rem;
-      }
-
-      #app.visible { display: flex; }
-
-      #topo {
-        display: flex;
-        flex-wrap: wrap;
-        align-items: baseline;
-        justify-content: space-between;
-        gap: 0.5rem 1rem;
-        border-bottom: 1px solid var(--line);
-        padding-bottom: 0.55rem;
-      }
-
-      #titulo-jogo {
-        margin: 0;
-        font-size: clamp(1.2rem, 3vw, 1.6rem);
-        font-weight: 600;
-      }
-
-      #autor-jogo {
-        margin: 0;
-        font-family: "Share Tech Mono", monospace;
+        padding-left: 1.1rem;
+        font-family: "IBM Plex Mono", monospace;
         font-size: 0.7rem;
         color: var(--muted);
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
       }
 
-      #layout {
-        flex: 1;
-        min-height: 0;
-        display: grid;
-        gap: 0.75rem;
+      /* ---------- APP / STAGE ---------- */
+      #app {
+        display: none;
+        position: fixed;
+        inset: 0;
+        z-index: 10;
       }
+      #app.visible { display: block; }
 
-      #midia {
-        background: #000;
-        border: 1px solid #000;
-        position: relative;
+      #stage {
+        position: absolute;
+        inset: 0;
         overflow: hidden;
-        min-height: 0;
+        background: #000;
       }
 
       #cena-imagem,
       #cena-video {
+        position: absolute;
+        inset: 0;
         width: 100%;
         height: 100%;
         object-fit: cover;
         display: block;
       }
 
-      #cena-imagem.hidden,
-      #cena-video.hidden { display: none; }
-
-      #cena-imagem, #cena-video {
-        transition: opacity 280ms ease;
+      #cena-imagem {
+        animation: kenBurnsSlow 22s ease-in-out infinite alternate;
+        transform-origin: 50% 40%;
       }
-      #cena-imagem.is-fade, #cena-video.is-fade { opacity: 0; }
 
-      #audio-player {
-        width: 100%;
-        height: 32px;
-        margin-top: 0.35rem;
+      #cena-imagem.is-fade,
+      #cena-video.is-fade { opacity: 0; }
+
+      #cena-imagem,
+      #cena-video {
+        transition: opacity 420ms ease;
+      }
+
+      #stage-fx {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        z-index: 2;
+        background:
+          linear-gradient(180deg, rgba(0,0,0,0.45) 0%, transparent 22%, transparent 48%, rgba(0,0,0,0.82) 100%),
+          radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.55) 100%);
+      }
+
+      #stage-grain {
+        position: absolute;
+        inset: 0;
+        z-index: 3;
+        pointer-events: none;
+        opacity: 0.08;
+        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+        mix-blend-mode: overlay;
+      }
+
+      #flash-dano {
+        position: absolute;
+        inset: 0;
+        z-index: 4;
+        pointer-events: none;
+        background: rgba(140, 16, 24, 0.45);
+        opacity: 0;
+      }
+      #flash-dano.on {
+        animation: hitFlash 420ms ease-out;
+      }
+
+      /* ---------- HUD ---------- */
+      #hud {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 12;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+        padding: max(0.65rem, env(safe-area-inset-top)) 0.9rem 0.65rem;
+        background: linear-gradient(180deg, rgba(0,0,0,0.75), transparent);
+        font-family: "IBM Plex Mono", monospace;
+      }
+
+      #hud-brand {
+        display: flex;
+        flex-direction: column;
+        gap: 0.1rem;
+        min-width: 0;
+      }
+
+      #titulo-jogo {
+        margin: 0;
+        font-family: "Cormorant Garamond", Georgia, serif;
+        font-size: clamp(1rem, 2.4vw, 1.25rem);
+        font-weight: 600;
+        letter-spacing: 0.02em;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      #autor-jogo {
+        margin: 0;
+        font-size: 0.6rem;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+
+      #hud-stats {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        gap: 0.35rem;
+        max-width: 70%;
+      }
+
+      .stat-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        padding: 0.28rem 0.55rem;
+        border: 1px solid var(--line);
+        background: rgba(0,0,0,0.55);
+        font-size: 0.65rem;
+        letter-spacing: 0.04em;
+        color: var(--muted);
+        backdrop-filter: blur(6px);
+      }
+
+      .stat-pill strong {
+        color: var(--ink);
+        font-weight: 500;
+      }
+
+      .stat-pill.vida strong { color: var(--blood-hot); }
+      .stat-pill.vida.low {
+        border-color: var(--blood-hot);
+        animation: pulseSoft 1s ease-in-out infinite;
+      }
+
+      #btn-mute,
+      #btn-reiniciar {
+        font-family: "IBM Plex Mono", monospace;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        cursor: pointer;
+        border: 1px solid var(--line);
+        background: rgba(0,0,0,0.55);
+        color: var(--ink);
+        min-height: 34px;
+        padding: 0.3rem 0.55rem;
+        font-size: 0.62rem;
+      }
+
+      #btn-mute:hover,
+      #btn-reiniciar:hover {
+        border-color: var(--blood-hot);
+        color: #fff;
+        background: rgba(122, 31, 40, 0.55);
+      }
+
+      /* ---------- DIALOGUE DOCK ---------- */
+      #dock {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 12;
+        padding: 0;
+        display: block;
+        pointer-events: none;
       }
 
       #painel {
-        display: flex;
-        flex-direction: column;
-        min-height: 0;
-        background: var(--panel);
-        border: 1px solid var(--line);
-        padding: 0.85rem;
-        gap: 0.7rem;
-        position: relative;
-        z-index: 2;
+        pointer-events: auto;
+        width: 100%;
+        max-width: none;
+        background: linear-gradient(180deg, rgba(8,6,8,0.4), rgba(8,6,8,0.94) 20%);
+        border: none;
+        border-top: 1px solid var(--line);
+        backdrop-filter: blur(16px) saturate(1.05);
+        box-shadow: 0 -30px 80px rgba(0,0,0,0.65);
+        padding: 0.7rem clamp(0.85rem, 3vw, 1.5rem) max(0.7rem, env(safe-area-inset-bottom));
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+        animation: dockIn 0.45s ease both;
+      }
+
+      #painel.is-swap {
+        animation: dockSwap 0.38s ease both;
+      }
+
+      #narrativa {
+        min-width: 0;
+        display: grid;
+        gap: 0.35rem;
+        align-content: start;
+      }
+
+      #acoes-wrap {
+        min-width: 0;
+        display: grid;
+        gap: 0.4rem;
+        align-content: start;
       }
 
       #cena-titulo {
         margin: 0;
-        font-family: "Share Tech Mono", monospace;
-        font-size: 0.78rem;
-        letter-spacing: 0.14em;
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 0.72rem;
+        letter-spacing: 0.16em;
         text-transform: uppercase;
         color: var(--blood-hot);
       }
 
       #cena-texto {
-        flex: 1;
-        min-height: 0;
-        overflow-y: auto;
         margin: 0;
+        max-height: min(22vh, 170px);
+        overflow-y: auto;
         white-space: pre-wrap;
-        font-size: clamp(1.05rem, 2.2vw, 1.28rem);
-        line-height: 1.4;
+        font-size: clamp(1.12rem, 2.2vw, 1.32rem);
+        line-height: 1.3;
+        color: var(--ink);
       }
 
-      #status {
+      #inv-bar {
         display: flex;
         flex-wrap: wrap;
-        gap: 0.55rem 1rem;
-        font-family: "Share Tech Mono", monospace;
-        font-size: 0.72rem;
-        color: var(--muted);
-        border-top: 1px solid var(--line);
-        border-bottom: 1px solid var(--line);
-        padding: 0.55rem 0;
+        gap: 0.35rem;
+        min-height: 1.2rem;
       }
 
-      #status strong { color: var(--text); font-weight: 400; }
+      .inv-chip {
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 0.62rem;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        padding: 0.22rem 0.45rem;
+        border: 1px solid rgba(196, 64, 72, 0.4);
+        background: rgba(122, 31, 40, 0.22);
+        color: #d8cfc4;
+        animation: chipIn 0.35s ease both;
+      }
 
       #opcoes {
         display: grid;
-        gap: 0.45rem;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.4rem;
       }
+
+      .opt-btn,
+      #btn-iniciar,
+      #btn-continuar {
+        font-family: "IBM Plex Mono", monospace;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        cursor: pointer;
+        border: 1px solid var(--blood);
+        background: rgba(18, 8, 10, 0.9);
+        color: var(--ink);
+        transition: background 0.15s ease, transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+      }
+
+      #btn-iniciar,
+      #btn-continuar {
+        min-height: 48px;
+        padding: 0.75rem 1rem;
+        font-size: 0.8rem;
+      }
+
+      #btn-iniciar {
+        background: linear-gradient(180deg, #9a2a34, #6e1c24);
+        border-color: #c43340;
+        box-shadow: 0 0 24px rgba(160, 32, 40, 0.35);
+      }
+
+      #btn-continuar { background: transparent; }
 
       .opt-btn {
         width: 100%;
-        min-height: 48px;
+        min-height: 46px;
         padding: 0.65rem 0.8rem;
         text-align: left;
-        font-size: 0.78rem;
+        font-size: 0.74rem;
+        opacity: 0;
+        transform: translateY(8px);
       }
 
+      .opt-btn.show {
+        opacity: 1;
+        transform: translateY(0);
+        transition: opacity 0.28s ease, transform 0.28s ease, background 0.15s ease, border-color 0.15s ease;
+      }
+
+      .opt-btn:nth-child(1).show { transition-delay: 0.03s; }
+      .opt-btn:nth-child(2).show { transition-delay: 0.08s; }
+      .opt-btn:nth-child(3).show { transition-delay: 0.13s; }
+      .opt-btn:nth-child(4).show { transition-delay: 0.18s; }
+
       .opt-btn.hidden { display: none; }
+
+      #btn-iniciar:hover,
+      #btn-continuar:hover,
+      .opt-btn:hover {
+        background: var(--blood-hot);
+        border-color: #e04a55;
+        color: #fff;
+        transform: translateY(-1px);
+        box-shadow: 0 8px 24px rgba(160, 32, 40, 0.35);
+      }
 
       #rodape-acoes {
         display: flex;
         justify-content: flex-end;
       }
 
-      #btn-reiniciar {
-        min-height: 40px;
-        padding: 0.45rem 0.8rem;
-        font-size: 0.68rem;
-        background: transparent;
+      #audio-player { display: none; }
+
+      /* ---------- MOTION ---------- */
+      @keyframes kenBurns {
+        from { transform: scale(1.05) translate3d(0, 0, 0); }
+        to { transform: scale(1.14) translate3d(-1.5%, 1%, 0); }
+      }
+      @keyframes kenBurnsSlow {
+        from { transform: scale(1.02); }
+        to { transform: scale(1.1) translate3d(-1%, 0.5%, 0); }
+      }
+      @keyframes riseIn {
+        from { opacity: 0; transform: translateY(24px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      @keyframes dockIn {
+        from { opacity: 0; transform: translateY(28px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      @keyframes dockSwap {
+        0% { opacity: 0.35; transform: translateY(10px); }
+        100% { opacity: 1; transform: translateY(0); }
+      }
+      @keyframes chipIn {
+        from { opacity: 0; transform: scale(0.9); }
+        to { opacity: 1; transform: scale(1); }
+      }
+      @keyframes pulseSoft {
+        0%, 100% { opacity: 0.55; }
+        50% { opacity: 1; }
+      }
+      @keyframes flicker {
+        0%, 100% { opacity: 1; }
+        92% { opacity: 1; }
+        93% { opacity: 0.86; }
+        94% { opacity: 1; }
+        96% { opacity: 0.9; }
+      }
+      @keyframes hitFlash {
+        0% { opacity: 0.7; }
+        100% { opacity: 0; }
       }
 
-      #loading {
-        position: fixed;
-        inset: 0;
-        z-index: 50;
-        display: grid;
-        place-items: center;
-        background: var(--bg);
-        font-family: "Share Tech Mono", monospace;
-        font-size: 0.8rem;
-        color: var(--muted);
+      @media (max-height: 700px) {
+        #cena-texto { max-height: 18vh; font-size: 1.05rem; }
       }
 
-      #loading.hidden { display: none; }
-
-      /* Horizontal */
-      @media (orientation: landscape) {
-        #layout {
-          grid-template-columns: 1.15fr 1fr;
-          grid-template-rows: 1fr;
-        }
-        #midia { min-height: 0; }
-      }
-
-      /* Vertical */
-      @media (orientation: portrait) {
-        #layout {
+      @media (max-width: 720px) {
+        #boot-content {
           grid-template-columns: 1fr;
-          grid-template-rows: minmax(180px, 34vh) 1fr;
+          text-align: left;
+          gap: 0.85rem;
         }
-      }
-
-      @media (max-width: 640px) {
-        #app { padding: 0.55rem; }
-        .opt-btn { font-size: 0.7rem; }
+        #opcoes { grid-template-columns: 1fr; }
+        #hud-stats { max-width: 68%; }
+        .stat-pill { font-size: 0.58rem; padding: 0.22rem 0.4rem; }
+        .opt-btn { font-size: 0.68rem; min-height: 44px; }
       }
     </style>
   </head>
   <body>
-    <div id="loading">Carregando a casa…</div>
+    <div id="loading"><span>Carregando a casa…</span></div>
 
     <div id="boot">
-      <img id="boot-cover" class="hidden" alt="" />
-      <div id="boot-icon"></div>
-      <h1 id="boot-title">A Casa que Lembra</h1>
-      <p id="boot-sub"></p>
-      <p id="boot-author"></p>
-      <div id="boot-actions">
-        <button type="button" id="btn-iniciar" disabled>Carregando…</button>
-        <button type="button" id="btn-continuar" class="hidden">▶ Continuar</button>
-      </div>
-      <div id="ranking-box">
-        <p>Melhores pontuações</p>
-        <ol id="ranking-lista"></ol>
+      <div id="boot-bg" aria-hidden="true"></div>
+      <div id="boot-vignette" aria-hidden="true"></div>
+      <div id="boot-content">
+        <div id="boot-copy">
+          <div id="boot-icon"></div>
+          <h1 id="boot-title">A Casa que Lembra</h1>
+          <p id="boot-sub"></p>
+          <p id="boot-author"></p>
+        </div>
+        <div id="boot-side">
+          <div id="boot-actions">
+            <button type="button" id="btn-iniciar" disabled>Carregando…</button>
+            <button type="button" id="btn-continuar" class="hidden">▶ Continuar</button>
+          </div>
+          <div id="ranking-box">
+            <p>Melhores pontuações</p>
+            <ol id="ranking-lista"></ol>
+          </div>
+        </div>
       </div>
     </div>
 
     <div id="app">
-      <header id="topo">
-        <h1 id="titulo-jogo">A Casa que Lembra</h1>
-        <p id="autor-jogo"></p>
+      <div id="stage">
+        <img id="cena-imagem" alt="" />
+        <video id="cena-video" class="hidden" playsinline></video>
+        <div id="stage-fx"></div>
+        <div id="stage-grain"></div>
+        <div id="flash-dano"></div>
+      </div>
+
+      <header id="hud">
+        <div id="hud-brand">
+          <h1 id="titulo-jogo">A Casa que Lembra</h1>
+          <p id="autor-jogo"></p>
+        </div>
+        <div id="hud-stats">
+          <span class="stat-pill vida">♥ <strong id="stat-vida">3</strong></span>
+          <span class="stat-pill">PTS <strong id="stat-pontos">0</strong></span>
+          <span class="stat-pill">TURNO <strong id="stat-turnos">0/15</strong></span>
+          <button type="button" id="btn-mute" title="Som">🔊 SOM</button>
+        </div>
       </header>
 
-      <div id="layout">
-        <section id="midia-wrap">
-          <div id="midia">
-            <img id="cena-imagem" alt="" />
-            <video id="cena-video" class="hidden" controls playsinline></video>
-          </div>
-          <audio id="audio-player" controls loop></audio>
-        </section>
-
+      <div id="dock">
         <section id="painel">
-          <h2 id="cena-titulo"></h2>
-          <p id="cena-texto"></p>
-          <div id="status">
-            <span>Vida: <strong id="stat-vida">3</strong></span>
-            <span>Pontos: <strong id="stat-pontos">0</strong></span>
-            <span>Turnos: <strong id="stat-turnos">0/15</strong></span>
-            <span>Inventário: <strong id="stat-inv">nada</strong></span>
+          <div id="narrativa">
+            <h2 id="cena-titulo"></h2>
+            <p id="cena-texto"></p>
+            <div id="inv-bar" aria-label="Inventário"></div>
+            <div id="status" class="hidden">
+              <span>Inventário: <strong id="stat-inv">nada</strong></span>
+            </div>
           </div>
-          <div id="opcoes">
-            <button type="button" class="opt-btn hidden" id="opt-0"></button>
-            <button type="button" class="opt-btn hidden" id="opt-1"></button>
-            <button type="button" class="opt-btn hidden" id="opt-2"></button>
-            <button type="button" class="opt-btn hidden" id="opt-3"></button>
-          </div>
-          <div id="rodape-acoes">
-            <button type="button" id="btn-reiniciar">↻ Reiniciar aventura</button>
+          <div id="acoes-wrap">
+            <div id="opcoes">
+              <button type="button" class="opt-btn hidden" id="opt-0"></button>
+              <button type="button" class="opt-btn hidden" id="opt-1"></button>
+              <button type="button" class="opt-btn hidden" id="opt-2"></button>
+              <button type="button" class="opt-btn hidden" id="opt-3"></button>
+            </div>
+            <div id="rodape-acoes">
+              <button type="button" id="btn-reiniciar">↻ Reiniciar</button>
+            </div>
           </div>
         </section>
       </div>
+
+      <audio id="audio-player" loop preload="auto"></audio>
     </div>
 
     <script>
-      function tocarSfx(src) {
-        if (!src) return;
-        try {
-          const a = new Audio(src);
-          a.volume = 0.55;
-          a.play();
-        } catch (e) {}
-      }
-      window.tocarSfx = tocarSfx;
+      (function () {
+        const bgm = () => document.getElementById("audio-player");
+        let muted = false;
+        let unlocked = false;
+        let currentSrc = "";
 
-      /** Fade curto na troca de imagem/vídeo (chamado pelo Python). */
-      window.aplicarMidiaCena = function (video, image, videoAutoplay) {
-        const img = document.getElementById("cena-imagem");
-        const vid = document.getElementById("cena-video");
-        if (!img || !vid) return;
-        img.classList.add("is-fade");
-        vid.classList.add("is-fade");
-        setTimeout(() => {
-          if (video) {
-            img.classList.add("hidden");
-            vid.classList.remove("hidden");
-            vid.src = video;
-            if (videoAutoplay) {
-              try { vid.play(); } catch (e) {}
-            } else {
-              try { vid.pause(); } catch (e) {}
-            }
-          } else {
-            vid.classList.add("hidden");
-            try { vid.pause(); } catch (e) {}
-            vid.removeAttribute("src");
-            img.classList.remove("hidden");
-            img.src = image || "";
+        function syncMuteButton() {
+          const btn = document.getElementById("btn-mute");
+          if (!btn) return;
+          btn.textContent = muted ? "🔇 MUDO" : "🔊 SOM";
+        }
+
+        async function unlockAudio() {
+          if (unlocked) return;
+          unlocked = true;
+          const a = bgm();
+          if (!a) return;
+          try {
+            // gesto do usuário: “abre” o áudio no navegador
+            a.muted = true;
+            a.src = "assets/audios/sfx_click.mp3";
+            await a.play();
+            a.pause();
+            a.currentTime = 0;
+            a.muted = muted;
+            a.removeAttribute("src");
+            currentSrc = "";
+          } catch (e) {
+            unlocked = true;
           }
-          img.classList.remove("is-fade");
-          vid.classList.remove("is-fade");
-        }, 140);
-      };
+        }
 
-      function wireUi() {
-        const iniciar = document.getElementById("btn-iniciar");
-        const continuar = document.getElementById("btn-continuar");
-        const reiniciar = document.getElementById("btn-reiniciar");
-        if (iniciar) {
-          iniciar.addEventListener("click", () => {
-            tocarSfx("assets/audios/sfx_click.mp3");
-            if (window.iniciar_jogo) window.iniciar_jogo();
+        window.tocarSfx = function (src) {
+          if (!src || muted) return;
+          try {
+            const s = new Audio(src);
+            s.volume = 0.6;
+            const p = s.play();
+            if (p && p.catch) p.catch(() => {});
+          } catch (e) {}
+        };
+
+        window.tocarTrilha = function (src, volume) {
+          if (!src) return;
+          const a = bgm();
+          if (!a) return;
+          const vol = typeof volume === "number" ? volume : 0.48;
+          a.volume = muted ? 0 : vol;
+          a.loop = true;
+          if (currentSrc !== src) {
+            currentSrc = src;
+            a.src = src;
+            try { a.load(); } catch (e) {}
+          }
+          const p = a.play();
+          if (p && p.catch) {
+            p.catch(() => {
+              // tenta de novo após gesto
+              unlocked = false;
+            });
+          }
+        };
+
+        window.pararTrilha = function () {
+          const a = bgm();
+          if (!a) return;
+          try {
+            a.pause();
+            a.currentTime = 0;
+          } catch (e) {}
+          a.removeAttribute("src");
+          currentSrc = "";
+        };
+
+        window.flashDano = function () {
+          const el = document.getElementById("flash-dano");
+          if (!el) return;
+          el.classList.remove("on");
+          void el.offsetWidth;
+          el.classList.add("on");
+        };
+
+        window.animarPainel = function () {
+          const painel = document.getElementById("painel");
+          if (!painel) return;
+          painel.classList.remove("is-swap");
+          void painel.offsetWidth;
+          painel.classList.add("is-swap");
+        };
+
+        window.mostrarOpcoesAnimadas = function () {
+          for (let i = 0; i < 4; i++) {
+            const btn = document.getElementById("opt-" + i);
+            if (!btn || btn.classList.contains("hidden")) continue;
+            btn.classList.remove("show");
+            void btn.offsetWidth;
+            btn.classList.add("show");
+          }
+        };
+
+        window.atualizarInventarioUI = function (itens) {
+          const bar = document.getElementById("inv-bar");
+          if (!bar) return;
+          bar.innerHTML = "";
+          let list = [];
+          try {
+            if (typeof itens === "string") {
+              list = JSON.parse(itens);
+            } else if (Array.isArray(itens)) {
+              list = itens;
+            } else if (itens && typeof itens.length === "number") {
+              list = Array.from(itens);
+            }
+          } catch (e) {
+            list = [];
+          }
+          if (!list.length) {
+            const empty = document.createElement("span");
+            empty.className = "inv-chip";
+            empty.style.opacity = "0.55";
+            empty.textContent = "inventário vazio";
+            bar.appendChild(empty);
+            return;
+          }
+          list.forEach((item, idx) => {
+            const chip = document.createElement("span");
+            chip.className = "inv-chip";
+            chip.style.animationDelay = idx * 40 + "ms";
+            chip.textContent = String(item);
+            bar.appendChild(chip);
           });
+        };
+
+        window.aplicarMidiaCena = function (video, image, videoAutoplay) {
+          const img = document.getElementById("cena-imagem");
+          const vid = document.getElementById("cena-video");
+          if (!img || !vid) return;
+          img.classList.add("is-fade");
+          vid.classList.add("is-fade");
+          setTimeout(() => {
+            if (video) {
+              img.classList.add("hidden");
+              vid.classList.remove("hidden");
+              vid.src = video;
+              if (videoAutoplay) {
+                try { vid.play(); } catch (e) {}
+              } else {
+                try { vid.pause(); } catch (e) {}
+              }
+            } else {
+              vid.classList.add("hidden");
+              try { vid.pause(); } catch (e) {}
+              vid.removeAttribute("src");
+              img.classList.remove("hidden");
+              // reinicia ken burns
+              img.style.animation = "none";
+              void img.offsetWidth;
+              img.style.animation = "";
+              img.src = image || "";
+            }
+            img.classList.remove("is-fade");
+            vid.classList.remove("is-fade");
+          }, 180);
+        };
+
+        function wireUi() {
+          const iniciar = document.getElementById("btn-iniciar");
+          const continuar = document.getElementById("btn-continuar");
+          const reiniciar = document.getElementById("btn-reiniciar");
+          const mute = document.getElementById("btn-mute");
+
+          async function startWithAudio(fn) {
+            await unlockAudio();
+            window.tocarSfx("assets/audios/sfx_click.mp3");
+            window.tocarTrilha("assets/audios/trilha_casa.mp3", 0.48);
+            if (fn) fn();
+          }
+
+          if (iniciar) {
+            iniciar.addEventListener("click", () => {
+              startWithAudio(() => {
+                if (window.iniciar_jogo) window.iniciar_jogo();
+              });
+            });
+          }
+          if (continuar) {
+            continuar.addEventListener("click", () => {
+              startWithAudio(() => {
+                if (window.continuar_jogo) window.continuar_jogo();
+              });
+            });
+          }
+          if (reiniciar) {
+            reiniciar.addEventListener("click", () => {
+              startWithAudio(() => {
+                if (window.reiniciar_aventura) window.reiniciar_aventura();
+              });
+            });
+          }
+          if (mute) {
+            mute.addEventListener("click", () => {
+              muted = !muted;
+              const a = bgm();
+              if (a) a.volume = muted ? 0 : 0.48;
+              syncMuteButton();
+              if (!muted) unlockAudio();
+            });
+          }
+
+          for (let i = 0; i < 4; i++) {
+            const btn = document.getElementById("opt-" + i);
+            if (!btn) continue;
+            btn.addEventListener("click", () => {
+              const acao = btn.getAttribute("data-acao");
+              window.tocarSfx("assets/audios/sfx_click.mp3");
+              if (acao && window.executar_acao_js) window.executar_acao_js(String(acao));
+            });
+          }
+          syncMuteButton();
         }
-        if (continuar) {
-          continuar.addEventListener("click", () => {
-            tocarSfx("assets/audios/sfx_click.mp3");
-            if (window.continuar_jogo) window.continuar_jogo();
-          });
-        }
-        if (reiniciar) {
-          reiniciar.addEventListener("click", () => {
-            tocarSfx("assets/audios/sfx_click.mp3");
-            if (window.reiniciar_aventura) window.reiniciar_aventura();
-          });
-        }
-        for (let i = 0; i < 4; i++) {
-          const btn = document.getElementById("opt-" + i);
-          if (!btn) continue;
-          btn.addEventListener("click", () => {
-            const acao = btn.getAttribute("data-acao");
-            tocarSfx("assets/audios/sfx_click.mp3");
-            if (acao && window.executar_acao_js) window.executar_acao_js(String(acao));
-          });
-        }
-      }
-      wireUi();
+
+        wireUi();
+      })();
     </script>
 
     <script type="py" src="./main.py"></script>
