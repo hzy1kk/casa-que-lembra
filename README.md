@@ -37,8 +37,9 @@ backups/            — backup .tar.gz do jogo funcional
 
 ## Mecânicas
 
-- **Vida**, inventário, pontuação e **turnos (máx. 15)**
-- Cada clique de escolha gasta 1 turno; aos 15 a casa escolhe (`fim_atrasado`)
+- **Vida**, inventário, pontuação e **turnos (máx. 15 explorando)**
+- Cada clique de escolha gasta 1 turno; aos 15 fora do espelho a casa escolhe (`fim_atrasado`)
+- No confronto do espelho você ainda pode fechar um final
 - Decisões condicionadas a itens (porão, quarto dos pais, verdade, ritual)
 - **Save / Continuar** e **ranking** no `localStorage` do navegador
 - SFX curtos (porta, passos, TV, dano) + trilhas por cena

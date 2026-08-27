@@ -48,6 +48,8 @@
 
 ## Regras rápidas
 
-- Cada escolha gasta **1 turno** (máx. 15).
+- Cada escolha gasta **1 turno** (máx. 15 explorando).
+- Se chegar a 15 ainda andando pela casa → `fim_atrasado`.
+- Se chegar ao **espelho** / diálogo do eco a tempo, ainda pode escolher o final.
 - Consequências ruins usam cenas próprias (`porta_falha`, `eco_responde`, `enigma_falha`, etc.).
 - Save e ranking ficam no navegador (`localStorage`).

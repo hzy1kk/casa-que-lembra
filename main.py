@@ -57,6 +57,13 @@ FINAIS = {
     "fim_atrasado",
 }
 
+# No espelho a contagem “pausa”: o jogador ainda pode escolher o final
+CONFRONTACAO = {
+    "dialogo_eco",
+    "espelho",
+    "ritual_falha",
+}
+
 # ---------------------------------------------------------------------------
 # STATE — inventário, vida, turnos e flags da história
 # ---------------------------------------------------------------------------
@@ -1349,7 +1356,7 @@ def executar_acao(acao):
 def executar_acao_js(acao):
     """
     Entrada dos cliques (JavaScript → Python).
-    Conta 1 turno por escolha; aos 15 fora de final, a casa escolhe.
+    Conta 1 turno por escolha; aos 15 fora do espelho/final, a casa escolhe.
     """
     acao = str(acao).strip() if acao is not None else ""
     if not acao or acao == "None" or acao == "undefined":
@@ -1363,15 +1370,15 @@ def executar_acao_js(acao):
     state["turnos"] += 1
     atualizar_status()
 
-    # Se o 15º turno começa fora de um final já escolhido, a casa decide
-    if state["turnos"] > CONFIG["max_turnos"]:
-        _finalizar("fim_atrasado")
-        return
-
     executar_acao(acao)
 
     cena = state.get("cena_atual")
-    if state["turnos"] >= CONFIG["max_turnos"] and not _eh_final(cena):
+    # Aos 15 turnos ainda explorando (fora do espelho), a casa decide
+    if (
+        state["turnos"] >= CONFIG["max_turnos"]
+        and not _eh_final(cena)
+        and cena not in CONFRONTACAO
+    ):
         _finalizar("fim_atrasado")
         return
 
