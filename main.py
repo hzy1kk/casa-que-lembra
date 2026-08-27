@@ -88,6 +88,7 @@ def _estado_inicial():
 
 
 state = _estado_inicial()
+_js_proxies = []
 
 
 # ---------------------------------------------------------------------------
@@ -307,50 +308,26 @@ def mostrar_cena(nome):
     document.querySelector("#cena-titulo").innerText = cena.get("title", "")
     document.querySelector("#cena-texto").innerText = cena.get("text", "")
 
-    img = document.querySelector("#cena-imagem")
-    vid = document.querySelector("#cena-video")
-
-    # Fade curto na troca de mídia
+    # Fade + troca de mídia via helper JS (evita proxies temporários no setTimeout)
     try:
-        img.classList.add("is-fade")
-        vid.classList.add("is-fade")
+        payload = {
+            "video": cena.get("video") or "",
+            "video_autoplay": bool(cena.get("video_autoplay")),
+            "image": cena.get("image") or CONFIG.get("capa") or "",
+        }
+        window.aplicarMidiaCena(payload)
     except Exception:
-        pass
-
-    def _aplicar_midia():
+        img = document.querySelector("#cena-imagem")
+        vid = document.querySelector("#cena-video")
         if cena.get("video"):
             img.classList.add("hidden")
             vid.classList.remove("hidden")
             vid.src = cena["video"]
-            if cena.get("video_autoplay"):
-                try:
-                    vid.play()
-                except Exception:
-                    pass
-            else:
-                try:
-                    vid.pause()
-                except Exception:
-                    pass
         else:
             vid.classList.add("hidden")
-            try:
-                vid.pause()
-            except Exception:
-                pass
             vid.removeAttribute("src")
             img.classList.remove("hidden")
             img.src = cena.get("image") or CONFIG.get("capa") or ""
-        try:
-            img.classList.remove("is-fade")
-            vid.classList.remove("is-fade")
-        except Exception:
-            pass
-
-    try:
-        window.setTimeout(create_proxy(_aplicar_midia), 140)
-    except Exception:
-        _aplicar_midia()
 
     if cena.get("sfx"):
         tocar_sfx(cena["sfx"])
@@ -1376,7 +1353,8 @@ def executar_acao_js(acao):
     Entrada dos cliques (JavaScript → Python).
     Conta 1 turno por escolha; aos 15 fora de final, a casa escolhe.
     """
-    if not acao:
+    acao = str(acao).strip() if acao is not None else ""
+    if not acao or acao == "None" or acao == "undefined":
         return
 
     # Não conta turno em reinícios internos sem clique — só cliques passam aqui
@@ -1415,11 +1393,18 @@ def configurar_interface():
     else:
         cover.classList.add("hidden")
 
-    # Expõe funções para o JavaScript da página (cliques reais no mouse)
-    window.iniciar_jogo = create_proxy(iniciar_jogo)
-    window.continuar_jogo = create_proxy(continuar_jogo)
-    window.reiniciar_aventura = create_proxy(reiniciar_aventura)
-    window.executar_acao_js = create_proxy(executar_acao_js)
+    # Expõe funções para o JavaScript (guarda proxies para o GC não liberar)
+    global _js_proxies
+    _js_proxies = [
+        create_proxy(iniciar_jogo),
+        create_proxy(continuar_jogo),
+        create_proxy(reiniciar_aventura),
+        create_proxy(executar_acao_js),
+    ]
+    window.iniciar_jogo = _js_proxies[0]
+    window.continuar_jogo = _js_proxies[1]
+    window.reiniciar_aventura = _js_proxies[2]
+    window.executar_acao_js = _js_proxies[3]
 
     atualizar_ranking_ui()
     _atualizar_botao_continuar()

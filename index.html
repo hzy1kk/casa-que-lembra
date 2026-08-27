@@ -412,6 +412,35 @@
       }
       window.tocarSfx = tocarSfx;
 
+      /** Fade curto na troca de imagem/vídeo (chamado pelo Python). */
+      window.aplicarMidiaCena = function (video, image, videoAutoplay) {
+        const img = document.getElementById("cena-imagem");
+        const vid = document.getElementById("cena-video");
+        if (!img || !vid) return;
+        img.classList.add("is-fade");
+        vid.classList.add("is-fade");
+        setTimeout(() => {
+          if (video) {
+            img.classList.add("hidden");
+            vid.classList.remove("hidden");
+            vid.src = video;
+            if (videoAutoplay) {
+              try { vid.play(); } catch (e) {}
+            } else {
+              try { vid.pause(); } catch (e) {}
+            }
+          } else {
+            vid.classList.add("hidden");
+            try { vid.pause(); } catch (e) {}
+            vid.removeAttribute("src");
+            img.classList.remove("hidden");
+            img.src = image || "";
+          }
+          img.classList.remove("is-fade");
+          vid.classList.remove("is-fade");
+        }, 140);
+      };
+
       function wireUi() {
         const iniciar = document.getElementById("btn-iniciar");
         const continuar = document.getElementById("btn-continuar");
@@ -440,7 +469,7 @@
           btn.addEventListener("click", () => {
             const acao = btn.getAttribute("data-acao");
             tocarSfx("assets/audios/sfx_click.mp3");
-            if (acao && window.executar_acao_js) window.executar_acao_js(acao);
+            if (acao && window.executar_acao_js) window.executar_acao_js(String(acao));
           });
         }
       }
