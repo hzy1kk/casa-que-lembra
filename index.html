@@ -54,6 +54,7 @@
       }
 
       #boot.hidden { display: none; }
+      .hidden { display: none !important; }
 
       #boot-cover {
         width: min(100%, 420px);
@@ -93,6 +94,7 @@
       }
 
       #btn-iniciar,
+      #btn-continuar,
       #btn-reiniciar,
       .opt-btn {
         font-family: "Share Tech Mono", monospace;
@@ -112,7 +114,46 @@
         background: var(--blood);
       }
 
+      #btn-continuar {
+        min-height: 44px;
+        padding: 0.7rem 1rem;
+        font-size: 0.78rem;
+        background: transparent;
+      }
+
+      #boot-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        width: min(100%, 320px);
+        margin: 0 auto;
+      }
+
+      #ranking-box {
+        margin-top: 1.1rem;
+        width: min(100%, 360px);
+        text-align: left;
+      }
+
+      #ranking-box > p {
+        font-family: "Share Tech Mono", monospace;
+        font-size: 0.65rem;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--blood-hot);
+        margin: 0 0 0.4rem;
+      }
+
+      #ranking-lista {
+        margin: 0;
+        padding-left: 1.2rem;
+        font-family: "Share Tech Mono", monospace;
+        font-size: 0.72rem;
+        color: var(--muted);
+      }
+
       #btn-iniciar:hover,
+      #btn-continuar:hover,
       #btn-reiniciar:hover,
       .opt-btn:hover {
         background: var(--blood-hot);
@@ -183,6 +224,11 @@
 
       #cena-imagem.hidden,
       #cena-video.hidden { display: none; }
+
+      #cena-imagem, #cena-video {
+        transition: opacity 280ms ease;
+      }
+      #cena-imagem.is-fade, #cena-video.is-fade { opacity: 0; }
 
       #audio-player {
         width: 100%;
@@ -308,7 +354,14 @@
       <h1 id="boot-title">A Casa que Lembra</h1>
       <p id="boot-sub"></p>
       <p id="boot-author"></p>
-      <button type="button" id="btn-iniciar" disabled>Carregando…</button>
+      <div id="boot-actions">
+        <button type="button" id="btn-iniciar" disabled>Carregando…</button>
+        <button type="button" id="btn-continuar" class="hidden">▶ Continuar</button>
+      </div>
+      <div id="ranking-box">
+        <p>Melhores pontuações</p>
+        <ol id="ranking-lista"></ol>
+      </div>
     </div>
 
     <div id="app">
@@ -332,6 +385,7 @@
           <div id="status">
             <span>Vida: <strong id="stat-vida">3</strong></span>
             <span>Pontos: <strong id="stat-pontos">0</strong></span>
+            <span>Turnos: <strong id="stat-turnos">0/15</strong></span>
             <span>Inventário: <strong id="stat-inv">nada</strong></span>
           </div>
           <div id="opcoes">
@@ -348,16 +402,35 @@
     </div>
 
     <script>
+      function tocarSfx(src) {
+        if (!src) return;
+        try {
+          const a = new Audio(src);
+          a.volume = 0.55;
+          a.play();
+        } catch (e) {}
+      }
+      window.tocarSfx = tocarSfx;
+
       function wireUi() {
         const iniciar = document.getElementById("btn-iniciar");
+        const continuar = document.getElementById("btn-continuar");
         const reiniciar = document.getElementById("btn-reiniciar");
         if (iniciar) {
           iniciar.addEventListener("click", () => {
+            tocarSfx("assets/audios/sfx_click.mp3");
             if (window.iniciar_jogo) window.iniciar_jogo();
+          });
+        }
+        if (continuar) {
+          continuar.addEventListener("click", () => {
+            tocarSfx("assets/audios/sfx_click.mp3");
+            if (window.continuar_jogo) window.continuar_jogo();
           });
         }
         if (reiniciar) {
           reiniciar.addEventListener("click", () => {
+            tocarSfx("assets/audios/sfx_click.mp3");
             if (window.reiniciar_aventura) window.reiniciar_aventura();
           });
         }
@@ -366,6 +439,7 @@
           if (!btn) continue;
           btn.addEventListener("click", () => {
             const acao = btn.getAttribute("data-acao");
+            tocarSfx("assets/audios/sfx_click.mp3");
             if (acao && window.executar_acao_js) window.executar_acao_js(acao);
           });
         }

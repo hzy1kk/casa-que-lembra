@@ -1,9 +1,16 @@
 """
 A Casa que Lembra — PyScript GameJam V2
 Terror narrativo interativo (botões, sem input/terminal).
+
+Estrutura didática (escola / GameJam):
+  CONFIG  → dados fixos do jogo (título, vida, capa, trilha)
+  state   → o que muda durante a partida (vida, itens, turnos, flags)
+  SCENES  → cada tela: texto, imagem, até 4 opções (texto, nome_da_acao)
+  executar_acao() → regras: o que acontece quando o jogador clica
 """
 
 from pyscript import document, window
+import json
 
 try:
     from pyodide.ffi import create_proxy
@@ -12,7 +19,7 @@ except ImportError:
         return fn
 
 # ---------------------------------------------------------------------------
-# CONFIG
+# CONFIG — constantes do jogo (não mudam durante a partida)
 # ---------------------------------------------------------------------------
 
 CONFIG = {
@@ -26,33 +33,44 @@ CONFIG = {
     "vida_inicial": 3,
     "pontos_iniciais": 0,
     "cena_inicial": "inicio",
+    "max_turnos": 15,
+}
+
+SAVE_KEY = "casa_que_lembra_save"
+RANK_KEY = "casa_que_lembra_ranking"
+
+SFX = {
+    "click": "assets/audios/sfx_click.mp3",
+    "porta": "assets/audios/sfx_porta.mp3",
+    "passos": "assets/audios/sfx_passos.mp3",
+    "tv": "assets/audios/sfx_tv.mp3",
+    "dano": "assets/audios/sfx_dano.mp3",
+}
+
+# Finais conhecidos (para ranking e para não forçar “atrasado”)
+FINAIS = {
+    "fim_fuga",
+    "fim_verdade",
+    "fim_eco",
+    "fim_ritual",
+    "fim_ruim",
+    "fim_atrasado",
 }
 
 # ---------------------------------------------------------------------------
-# STATE
+# STATE — inventário, vida, turnos e flags da história
 # ---------------------------------------------------------------------------
 
-state = {
-    "vida": CONFIG["vida_inicial"],
-    "pontos": CONFIG["pontos_iniciais"],
-    "inventario": [],
-    "cena_atual": None,
-    "flags": {
-        "ouviu_fita": False,
-        "viu_foto": False,
-        "viu_tv": False,
-        "leu_bilhete": False,
-        "abriu_porao": False,
-        "conheceu_eco": False,
-    },
-}
+state = {}
 
 
 def _estado_inicial():
+    """Cria um estado novo de partida (usado em Novo jogo / Reiniciar)."""
     return {
         "vida": CONFIG["vida_inicial"],
         "pontos": CONFIG["pontos_iniciais"],
         "inventario": [],
+        "turnos": 0,
         "cena_atual": None,
         "flags": {
             "ouviu_fita": False,
@@ -61,17 +79,27 @@ def _estado_inicial():
             "leu_bilhete": False,
             "abriu_porao": False,
             "conheceu_eco": False,
+            "resolveu_enigma": False,
+            "falou_eco": False,
+            "achou_pedra": False,
+            "leu_pais": False,
         },
     }
 
 
+state = _estado_inicial()
+
+
 # ---------------------------------------------------------------------------
-# HELPERS DO FRAMEWORK
+# HELPERS DO FRAMEWORK (HUD, itens, áudio, save, ranking)
 # ---------------------------------------------------------------------------
 
 def atualizar_status():
+    """Atualiza vida, pontos, turnos e inventário na barra de status."""
     document.querySelector("#stat-vida").innerText = str(state["vida"])
     document.querySelector("#stat-pontos").innerText = str(state["pontos"])
+    max_t = CONFIG["max_turnos"]
+    document.querySelector("#stat-turnos").innerText = f"{state['turnos']}/{max_t}"
     inv = state["inventario"]
     document.querySelector("#stat-inv").innerText = ", ".join(inv) if inv else "nada"
 
@@ -99,13 +127,24 @@ def ganhar_pontos(n):
     atualizar_status()
 
 
+def tocar_sfx(chave_ou_caminho):
+    """Toca efeito sonoro curto via JavaScript (não corta a trilha)."""
+    src = SFX.get(chave_ou_caminho, chave_ou_caminho)
+    try:
+        window.tocarSfx(src)
+    except Exception:
+        pass
+
+
 def perder_vida(n=1):
+    tocar_sfx("dano")
     state["vida"] -= n
     if state["vida"] < 0:
         state["vida"] = 0
     atualizar_status()
     if state["vida"] <= 0:
         mostrar_cena("fim_ruim")
+        _ao_chegar_final("fim_ruim")
         return True
     return False
 
@@ -142,7 +181,121 @@ def _esconder_opcoes():
         btn.setAttribute("data-acao", "")
 
 
+def _eh_final(nome):
+    return nome in FINAIS or (nome and nome.startswith("fim_"))
+
+
+def salvar_jogo():
+    """Grava a partida atual no localStorage do navegador."""
+    if _eh_final(state.get("cena_atual")):
+        apagar_save()
+        return
+    payload = {
+        "vida": state["vida"],
+        "pontos": state["pontos"],
+        "inventario": list(state["inventario"]),
+        "turnos": state["turnos"],
+        "cena_atual": state["cena_atual"],
+        "flags": dict(state["flags"]),
+    }
+    try:
+        window.localStorage.setItem(SAVE_KEY, json.dumps(payload))
+    except Exception:
+        pass
+    _atualizar_botao_continuar()
+
+
+def apagar_save():
+    try:
+        window.localStorage.removeItem(SAVE_KEY)
+    except Exception:
+        pass
+    _atualizar_botao_continuar()
+
+
+def carregar_save_dict():
+    try:
+        raw = window.localStorage.getItem(SAVE_KEY)
+        if not raw:
+            return None
+        return json.loads(str(raw))
+    except Exception:
+        return None
+
+
+def _atualizar_botao_continuar():
+    btn = document.querySelector("#btn-continuar")
+    if not btn:
+        return
+    if carregar_save_dict():
+        btn.classList.remove("hidden")
+    else:
+        btn.classList.add("hidden")
+
+
+def registrar_ranking(final_id):
+    """Guarda top 5 pontuações (pontos + nome do final) no localStorage."""
+    nomes = {
+        "fim_fuga": "Fuga",
+        "fim_verdade": "Verdade",
+        "fim_eco": "O Eco sai",
+        "fim_ritual": "Ritual secreto",
+        "fim_ruim": "Morte",
+        "fim_atrasado": "Atrasado",
+    }
+    entrada = {
+        "pontos": state["pontos"],
+        "final": nomes.get(final_id, final_id),
+        "turnos": state["turnos"],
+    }
+    lista = []
+    try:
+        raw = window.localStorage.getItem(RANK_KEY)
+        if raw:
+            lista = json.loads(str(raw))
+    except Exception:
+        lista = []
+    lista.append(entrada)
+    lista.sort(key=lambda x: x.get("pontos", 0), reverse=True)
+    lista = lista[:5]
+    try:
+        window.localStorage.setItem(RANK_KEY, json.dumps(lista))
+    except Exception:
+        pass
+    atualizar_ranking_ui()
+
+
+def atualizar_ranking_ui():
+    ol = document.querySelector("#ranking-lista")
+    if not ol:
+        return
+    ol.innerHTML = ""
+    lista = []
+    try:
+        raw = window.localStorage.getItem(RANK_KEY)
+        if raw:
+            lista = json.loads(str(raw))
+    except Exception:
+        lista = []
+    if not lista:
+        li = document.createElement("li")
+        li.innerText = "Nenhuma partida ainda"
+        ol.appendChild(li)
+        return
+    for item in lista:
+        li = document.createElement("li")
+        li.innerText = f"{item.get('pontos', 0)} pts — {item.get('final', '?')} ({item.get('turnos', '?')} turnos)"
+        ol.appendChild(li)
+
+
+def _ao_chegar_final(nome):
+    """Chamado quando a partida termina: ranking + apaga save."""
+    apagar_save()
+    registrar_ranking(nome)
+
+
 def mostrar_cena(nome):
+    """Mostra título, texto, mídia e até 4 botões da cena pedida."""
     if nome not in SCENES:
         window.console.error(f"Cena desconhecida: {nome}")
         return
@@ -157,29 +310,50 @@ def mostrar_cena(nome):
     img = document.querySelector("#cena-imagem")
     vid = document.querySelector("#cena-video")
 
-    if cena.get("video"):
-        img.classList.add("hidden")
-        vid.classList.remove("hidden")
-        vid.src = cena["video"]
-        if cena.get("video_autoplay"):
-            try:
-                vid.play()
-            except Exception:
-                pass
+    # Fade curto na troca de mídia
+    try:
+        img.classList.add("is-fade")
+        vid.classList.add("is-fade")
+    except Exception:
+        pass
+
+    def _aplicar_midia():
+        if cena.get("video"):
+            img.classList.add("hidden")
+            vid.classList.remove("hidden")
+            vid.src = cena["video"]
+            if cena.get("video_autoplay"):
+                try:
+                    vid.play()
+                except Exception:
+                    pass
+            else:
+                try:
+                    vid.pause()
+                except Exception:
+                    pass
         else:
+            vid.classList.add("hidden")
             try:
                 vid.pause()
             except Exception:
                 pass
-    else:
-        vid.classList.add("hidden")
+            vid.removeAttribute("src")
+            img.classList.remove("hidden")
+            img.src = cena.get("image") or CONFIG.get("capa") or ""
         try:
-            vid.pause()
+            img.classList.remove("is-fade")
+            vid.classList.remove("is-fade")
         except Exception:
             pass
-        vid.removeAttribute("src")
-        img.classList.remove("hidden")
-        img.src = cena.get("image") or CONFIG.get("capa") or ""
+
+    try:
+        window.setTimeout(create_proxy(_aplicar_midia), 140)
+    except Exception:
+        _aplicar_midia()
+
+    if cena.get("sfx"):
+        tocar_sfx(cena["sfx"])
 
     if cena.get("stop_audio"):
         parar_audio()
@@ -194,10 +368,18 @@ def mostrar_cena(nome):
         btn.setAttribute("data-acao", acao)
         btn.classList.remove("hidden")
 
+    if _eh_final(nome):
+        # Evita salvar finais; ranking já registrado em _ao_chegar_final quando aplicável
+        pass
+    else:
+        salvar_jogo()
+
 
 def reiniciar_aventura(event=None):
+    """Zera o estado e começa do quarto (Novo jogo / Reiniciar)."""
     global state
     state = _estado_inicial()
+    apagar_save()
     atualizar_status()
     if CONFIG.get("trilha_inicial"):
         trocar_audio(CONFIG["trilha_inicial"])
@@ -205,21 +387,51 @@ def reiniciar_aventura(event=None):
 
 
 def iniciar_jogo(event=None):
+    """Esconde a tela de boot e inicia partida nova."""
     document.querySelector("#boot").classList.add("hidden")
     document.querySelector("#app").classList.add("visible")
     reiniciar_aventura()
 
 
-def ao_clicar_opcao(event):
-    btn = event.currentTarget
-    acao = btn.getAttribute("data-acao")
-    if not acao:
+def continuar_jogo(event=None):
+    """Carrega save do localStorage e retoma a cena salva."""
+    global state
+    data = carregar_save_dict()
+    if not data:
+        iniciar_jogo()
         return
-    executar_acao(acao)
+    state = _estado_inicial()
+    state["vida"] = data.get("vida", CONFIG["vida_inicial"])
+    state["pontos"] = data.get("pontos", 0)
+    state["inventario"] = list(data.get("inventario") or [])
+    state["turnos"] = data.get("turnos", 0)
+    flags = data.get("flags") or {}
+    for k in state["flags"]:
+        if k in flags:
+            state["flags"][k] = bool(flags[k])
+    cena = data.get("cena_atual") or CONFIG["cena_inicial"]
+    document.querySelector("#boot").classList.add("hidden")
+    document.querySelector("#app").classList.add("visible")
+    atualizar_status()
+    if CONFIG.get("trilha_inicial"):
+        trocar_audio(CONFIG["trilha_inicial"])
+    if cena in SCENES:
+        mostrar_cena(cena)
+    else:
+        mostrar_cena(CONFIG["cena_inicial"])
+
+
+def _finalizar(nome_cena, pontos_extra=0):
+    """Mostra um final, soma pontos opcionais e registra ranking."""
+    if pontos_extra:
+        ganhar_pontos(pontos_extra)
+    mostrar_cena(nome_cena)
+    _ao_chegar_final(nome_cena)
 
 
 # ---------------------------------------------------------------------------
-# SCENES — A Casa que Lembra
+# SCENES — cada chave é uma tela do jogo
+# options: lista de (texto_do_botão, nome_da_ação) — máximo 4
 # ---------------------------------------------------------------------------
 
 SCENES = {
@@ -259,24 +471,39 @@ SCENES = {
     "corredor": {
         "title": "O corredor",
         "image": "assets/imagens/corredor.jpg",
+        "sfx": "passos",
         "text": (
             "O corredor é estreito demais para uma casa. "
             "As paredes parecem ter se aproximado com os anos.\n\n"
             "Uma lâmpada amarela treme no teto. Longe, passos imitam os seus "
             "com meio segundo de atraso — clic… clic.\n\n"
             "À esquerda: a cozinha. À direita: a sala.\n"
-            "No fundo, escadas sobem ao sótão e descem ao porão."
+            "No fundo, escadas. A porta dos fundos leva ao jardim."
         ),
         "options": [
             ("Ir à cozinha", "cozinha"),
             ("Ir à sala", "sala"),
             ("Usar as escadas", "escadas"),
+            ("Mais caminhos…", "corredor_mais"),
+        ],
+    },
+    "corredor_mais": {
+        "title": "Outros caminhos",
+        "image": "assets/imagens/corredor.jpg",
+        "text": (
+            "A porta dos fundos range com o vento.\n"
+            "No escuro do corredor, alguém espera ser chamado pelo nome."
+        ),
+        "options": [
+            ("Ir ao jardim", "jardim"),
             ("Chamar quem está aí", "chamar_eco"),
+            ("Voltar", "corredor"),
         ],
     },
     "escadas": {
         "title": "As escadas",
         "image": "assets/imagens/corredor.jpg",
+        "sfx": "passos",
         "text": (
             "A escada sobe para o sótão empoeirado.\n"
             "A escada desce para a porta enferrujada do porão.\n\n"
@@ -300,6 +527,33 @@ SCENES = {
             "Você perdeu uma vida."
         ),
         "options": [
+            ("Voltar ao corredor", "corredor"),
+        ],
+    },
+    "jardim": {
+        "title": "O jardim",
+        "image": "assets/imagens/jardim.jpg",
+        "sfx": "passos",
+        "text": (
+            "O quintal está morto, mas a terra ainda cheira a chuva de infância.\n\n"
+            "Sob a roseira seca, uma pedra lisa com um apelido riscato a unha:\n"
+            "\"CASINHA\".\n\n"
+            "É o nome que você dava à casa quando tinha medo de dormir sozinho."
+        ),
+        "options": [
+            ("Pegar a pedra do jardim", "pegar_pedra"),
+            ("Voltar ao corredor", "corredor"),
+        ],
+    },
+    "item_pedra": {
+        "title": "Pedra do jardim",
+        "image": "assets/imagens/jardim.jpg",
+        "text": (
+            "Você guarda a pedra. O apelido queima na palma como se ainda estivesse quente.\n\n"
+            "A casa parece ter ouvido o próprio nome."
+        ),
+        "options": [
+            ("Ficar no jardim", "jardim"),
             ("Voltar ao corredor", "corredor"),
         ],
     },
@@ -363,11 +617,13 @@ SCENES = {
             "A sala está coberta. O sofá usa um lençol branco manchado de amarelo. "
             "Relógios parados. Poeira em camadas.\n\n"
             "A TV de tubo olha para você com a tela morta — um olho cinza, opaco.\n\n"
-            "Na estante, uma gaveta entreaberta."
+            "Na estante, uma gaveta entreaberta. "
+            "No corredor lateral, a porta do quarto dos pais."
         ),
         "options": [
             ("Abrir a gaveta da estante", "pegar_chave"),
             ("Examinar a TV", "examinar_tv"),
+            ("Ir ao quarto dos pais", "quarto_pais"),
             ("Voltar ao corredor", "corredor"),
         ],
     },
@@ -378,14 +634,98 @@ SCENES = {
             "A TV liga sozinha. Estática.\n\n"
             "No meio do ruído branco, um rosto se forma — o seu, mais novo, "
             "sorrindo sem chegar aos olhos.\n\n"
-            "Na estante, a gaveta ainda espera. "
+            "A gaveta ainda espera. O quarto dos pais também. "
             "E o rosto na estática parece puxar você para o espelho."
         ),
         "options": [
             ("Abrir a gaveta", "pegar_chave"),
-            ("Examinar a TV", "examinar_tv"),
+            ("Ir ao quarto dos pais", "quarto_pais"),
             ("Seguir o rosto (espelho)", "ir_espelho"),
             ("Voltar ao corredor", "corredor"),
+        ],
+    },
+    "quarto_pais": {
+        "title": "Quarto dos pais",
+        "image": "assets/imagens/quarto_pais.jpg",
+        "sfx": "porta",
+        "text": (
+            "A porta cede com a chave enferrujada. O quarto cheira a perfume velho.\n\n"
+            "Na cômoda, um bilhete dos pais:\n"
+            "\"Se ele acordar de novo, diga o apelido. Conte na ordem certa.\"\n\n"
+            "Ao lado, um envelope lacrado com um enigma desenhado à mão."
+        ),
+        "options": [
+            ("Ler o bilhete com cuidado", "ler_pais"),
+            ("Abrir o envelope (enigma)", "enigma"),
+            ("Voltar à sala", "voltar_sala"),
+        ],
+    },
+    "quarto_pais_trancado": {
+        "title": "Porta trancada",
+        "image": "assets/imagens/quarto_pais.jpg",
+        "sfx": "porta",
+        "text": (
+            "A porta do quarto dos pais não abre.\n"
+            "A fechadura pede a mesma chave do porão."
+        ),
+        "options": [
+            ("Voltar à sala", "voltar_sala"),
+        ],
+    },
+    "bilhete_pais": {
+        "title": "O apelido",
+        "image": "assets/imagens/quarto_pais.jpg",
+        "text": (
+            "No verso do bilhete, a letra da sua mãe:\n"
+            "\"Casinha. Sempre foi Casinha.\"\n\n"
+            "Você lembra do jardim. Da pedra. Do medo que pedia nomes."
+        ),
+        "options": [
+            ("Abrir o envelope (enigma)", "enigma"),
+            ("Voltar à sala", "voltar_sala"),
+        ],
+    },
+    "enigma": {
+        "title": "O enigma",
+        "image": "assets/imagens/enigma.jpg",
+        "text": (
+            "No papel: três linhas.\n\n"
+            "1) O que acende sem ser luz.\n"
+            "2) O que guarda a memória sem ser cabeça.\n"
+            "3) O apelido da casa.\n\n"
+            "Você precisa escolher a ordem certa — ou improvisar."
+        ),
+        "options": [
+            ("Fósforos → fita → Casinha", "enigma_certo"),
+            ("Chave → foto → eco", "enigma_errado"),
+            ("Vela → pedra → quinze", "enigma_errado"),
+            ("Desistir por agora", "voltar_sala"),
+        ],
+    },
+    "enigma_ok": {
+        "title": "A casa reconhece",
+        "image": "assets/imagens/enigma.jpg",
+        "text": (
+            "O envelope aquece e solta um cheiro de cera.\n\n"
+            "Você acertou a ordem. A casa suspira — um assoalho rangendo longe.\n"
+            "O ritual, se um dia for preciso, agora tem caminho."
+        ),
+        "options": [
+            ("Voltar à sala", "voltar_sala"),
+            ("Ir ao corredor", "corredor"),
+        ],
+    },
+    "enigma_falha": {
+        "title": "Ordem errada",
+        "image": "assets/imagens/enigma.jpg",
+        "text": (
+            "O papel queima nas bordas sem chama.\n\n"
+            "Uma dor seca sobe pelo braço. A casa não gosta de mentiras.\n\n"
+            "Você perdeu uma vida."
+        ),
+        "options": [
+            ("Tentar de novo", "enigma"),
+            ("Voltar à sala", "voltar_sala"),
         ],
     },
     "item_chave": {
@@ -404,6 +744,7 @@ SCENES = {
     "tv_estatica": {
         "title": "Estática",
         "image": "assets/imagens/tv_estatica.jpg",
+        "sfx": "tv",
         "text": (
             "Você liga a TV. Só estática.\n\n"
             "No chiado, quase dá para ouvir alguém contar: "
@@ -417,6 +758,7 @@ SCENES = {
     "tv_aviso": {
         "title": "Você deixou alguém",
         "image": "assets/imagens/tv_estatica.jpg",
+        "sfx": "tv",
         "text": (
             "Você se aproxima da tela. O rosto de criança abre a boca.\n\n"
             "Não sai som — sai um sopro frio. A estática sussurra:\n"
@@ -513,6 +855,7 @@ SCENES = {
     "porta_trancada": {
         "title": "Porão trancado",
         "image": "assets/imagens/porta_falha.jpg",
+        "sfx": "porta",
         "text": (
             "A porta do porão está trancada. "
             "A fechadura é antiga, coberta de ferrugem em forma de unha.\n\n"
@@ -526,6 +869,7 @@ SCENES = {
     "porta_falha": {
         "title": "A porta reage",
         "image": "assets/imagens/porta_falha.jpg",
+        "sfx": "porta",
         "text": (
             "Você empurra com o ombro. A madeira geme, mas não cede.\n\n"
             "Algo do outro lado empurra de volta — no mesmo ritmo.\n"
@@ -579,6 +923,23 @@ SCENES = {
             ("Continuar no porão", "porao"),
             ("Puxar o pano do espelho", "ir_espelho"),
             ("Subir ao corredor", "corredor"),
+        ],
+    },
+    "dialogo_eco": {
+        "title": "Diálogo com o eco",
+        "image": "assets/imagens/dialogo_eco.jpg",
+        "audio": "assets/audios/trilha_espelho.mp3",
+        "text": (
+            "Antes do confronto, o vidro embacia.\n\n"
+            "O eco inclina a cabeça — o seu gesto, atrasado — e pergunta:\n"
+            "\"Você veio me buscar… ou veio se despedir?\"\n\n"
+            "A resposta muda o peso do que vem depois."
+        ),
+        "options": [
+            ("\"Vim me lembrar de quem eu sou\"", "eco_lembrar"),
+            ("\"Vim acabar com isso\"", "eco_acabar"),
+            ("\"Vim te ouvir\"", "eco_ouvir"),
+            ("Ficar em silêncio", "eco_silencio"),
         ],
     },
     "espelho": {
@@ -689,7 +1050,7 @@ SCENES = {
             "Você risca o fósforo. A vela acende.\n\n"
             "A chama mostra o eco como ele é: pequeno, assustado, "
             "uma criança que prometeu não deixar a casa vazia.\n\n"
-            "Você diz o apelido da casa — o que o bilhete escondia.\n"
+            "Você diz o apelido da casa — Casinha.\n"
             "O eco encolhe. Vira menino de novo. Você apaga a vela com os dedos.\n\n"
             "No quintal, queima a fita. A casa, pela primeira vez em doze anos, "
             "não responde."
@@ -709,14 +1070,28 @@ SCENES = {
         ),
         "options": [],
     },
+    "fim_atrasado": {
+        "title": "FINAL — A CASA ESCOLHE",
+        "image": "assets/imagens/fim_atrasado.jpg",
+        "stop_audio": True,
+        "text": (
+            "Quinze.\n\n"
+            "O bilhete não mentia. A contagem termina e a casa decide por você.\n\n"
+            "Os passos atrasados alcançam o seu ritmo. "
+            "O corredor encolhe. O espelho já não precisa de você do lado de cá.\n\n"
+            "Alguém com o seu rosto apaga a luz."
+        ),
+        "options": [],
+    },
 }
 
 
 # ---------------------------------------------------------------------------
-# REGRAS / AÇÕES
+# REGRAS / AÇÕES — o que cada clique faz (itens, flags, cena seguinte)
 # ---------------------------------------------------------------------------
 
 def executar_acao(acao):
+    """Aplica a regra da ação escolhida. Não conta turno (isso é no bridge JS)."""
     flags = state["flags"]
 
     if acao == "ir_corredor":
@@ -734,8 +1109,25 @@ def executar_acao(acao):
         mostrar_cena("corredor")
         return
 
+    if acao == "corredor_mais":
+        mostrar_cena("corredor_mais")
+        return
+
     if acao == "escadas":
         mostrar_cena("escadas")
+        return
+
+    if acao == "jardim":
+        mostrar_cena("jardim")
+        return
+
+    if acao == "pegar_pedra":
+        if possui_item("pedra do jardim"):
+            mostrar_cena("jardim")
+            return
+        adicionar_item("pedra do jardim", pontos=12)
+        flags["achou_pedra"] = True
+        mostrar_cena("item_pedra")
         return
 
     if acao == "chamar_eco":
@@ -767,6 +1159,41 @@ def executar_acao(acao):
             mostrar_cena("sala_pista")
         else:
             mostrar_cena("sala")
+        return
+
+    if acao == "quarto_pais":
+        if not possui_item("chave enferrujada"):
+            mostrar_cena("quarto_pais_trancado")
+            return
+        mostrar_cena("quarto_pais")
+        return
+
+    if acao == "ler_pais":
+        flags["leu_pais"] = True
+        ganhar_pontos(8)
+        mostrar_cena("bilhete_pais")
+        return
+
+    if acao == "enigma":
+        if flags["resolveu_enigma"]:
+            mostrar_cena("enigma_ok")
+            return
+        mostrar_cena("enigma")
+        return
+
+    if acao == "enigma_certo":
+        flags["resolveu_enigma"] = True
+        bonus = 25
+        if possui_item("pedra do jardim") or flags["achou_pedra"] or flags["leu_pais"]:
+            bonus += 10
+        ganhar_pontos(bonus)
+        mostrar_cena("enigma_ok")
+        return
+
+    if acao == "enigma_errado":
+        morreu = perder_vida(1)
+        if not morreu:
+            mostrar_cena("enigma_falha")
         return
 
     if acao == "pegar_chave":
@@ -855,45 +1282,86 @@ def executar_acao(acao):
         )
         ganhar_pontos(5)
         if not tem_pista:
-            mostrar_cena("fim_ruim")
+            _finalizar("fim_ruim")
             return
         flags["conheceu_eco"] = True
+        if not flags["falou_eco"]:
+            mostrar_cena("dialogo_eco")
+        else:
+            mostrar_cena("espelho")
+        return
+
+    if acao == "eco_lembrar":
+        flags["falou_eco"] = True
+        ganhar_pontos(15)
         mostrar_cena("espelho")
+        return
+
+    if acao == "eco_acabar":
+        flags["falou_eco"] = True
+        ganhar_pontos(5)
+        # tom agressivo: leve risco narrativo — só pontos
+        mostrar_cena("espelho")
+        return
+
+    if acao == "eco_ouvir":
+        flags["falou_eco"] = True
+        ganhar_pontos(20)
+        mostrar_cena("espelho")
+        return
+
+    if acao == "eco_silencio":
+        flags["falou_eco"] = True
+        ganhar_pontos(2)
+        # Silêncio: o eco se aproxima e tira uma vida
+        morreu = perder_vida(1)
+        if not morreu:
+            mostrar_cena("espelho")
         return
 
     if acao == "escolher_fuga":
         if possui_item("chave enferrujada") or possui_item("fósforos"):
-            ganhar_pontos(20)
-            mostrar_cena("fim_fuga")
+            _finalizar("fim_fuga", 20)
         else:
-            mostrar_cena("fim_ruim")
+            _finalizar("fim_ruim")
         return
 
     if acao == "escolher_verdade":
         tem_fita = flags["ouviu_fita"] or possui_item("fita cassete")
         tem_foto = flags["viu_foto"] or possui_item("foto rasgada")
         if tem_fita and tem_foto:
-            ganhar_pontos(40)
-            mostrar_cena("fim_verdade")
+            bonus = 40
+            if flags["leu_pais"] or flags["falou_eco"]:
+                bonus += 10
+            _finalizar("fim_verdade", bonus)
         else:
-            mostrar_cena("fim_ruim")
+            _finalizar("fim_ruim")
         return
 
     if acao == "escolher_ritual":
-        if (
+        base_ok = (
             possui_item("vela")
             and possui_item("fósforos")
             and (flags["ouviu_fita"] or possui_item("fita cassete"))
-        ):
-            ganhar_pontos(60)
-            mostrar_cena("fim_ritual")
+        )
+        # Enigma ou pedra ajudam, mas ritual clássico ainda funciona sem eles
+        if base_ok:
+            bonus = 60
+            if flags["resolveu_enigma"]:
+                bonus += 20
+            if possui_item("pedra do jardim"):
+                bonus += 10
+            _finalizar("fim_ritual", bonus)
         else:
             mostrar_cena("ritual_falha")
         return
 
     if acao == "fim_eco":
-        ganhar_pontos(10)
-        mostrar_cena("fim_eco")
+        _finalizar("fim_eco", 10)
+        return
+
+    if acao == "espelho":
+        mostrar_cena("espelho")
         return
 
     if acao in SCENES:
@@ -903,11 +1371,35 @@ def executar_acao(acao):
     window.console.warn(f"Ação sem tratamento: {acao}")
 
 
+def executar_acao_js(acao):
+    """
+    Entrada dos cliques (JavaScript → Python).
+    Conta 1 turno por escolha; aos 15 fora de final, a casa escolhe.
+    """
+    if not acao:
+        return
+
+    # Não conta turno em reinícios internos sem clique — só cliques passam aqui
+    state["turnos"] += 1
+    atualizar_status()
+
+    executar_acao(acao)
+
+    cena = state.get("cena_atual")
+    if state["turnos"] >= CONFIG["max_turnos"] and not _eh_final(cena):
+        _finalizar("fim_atrasado")
+        return
+
+    if not _eh_final(cena):
+        salvar_jogo()
+
+
 # ---------------------------------------------------------------------------
 # BOOT DA INTERFACE
 # ---------------------------------------------------------------------------
 
 def configurar_interface():
+    """Preenche a tela inicial e liga o Python ao JavaScript dos botões."""
     document.querySelector("#boot-title").innerText = CONFIG["titulo"]
     document.querySelector("#boot-sub").innerText = CONFIG.get("subtitulo", "")
     document.querySelector("#boot-author").innerText = f"por {CONFIG.get('autor', '')}"
@@ -925,12 +1417,17 @@ def configurar_interface():
 
     # Expõe funções para o JavaScript da página (cliques reais no mouse)
     window.iniciar_jogo = create_proxy(iniciar_jogo)
+    window.continuar_jogo = create_proxy(continuar_jogo)
     window.reiniciar_aventura = create_proxy(reiniciar_aventura)
-    window.executar_acao_js = create_proxy(executar_acao)
+    window.executar_acao_js = create_proxy(executar_acao_js)
+
+    atualizar_ranking_ui()
+    _atualizar_botao_continuar()
+    atualizar_status()
 
     document.querySelector("#loading").classList.add("hidden")
     document.querySelector("#btn-iniciar").disabled = False
-    document.querySelector("#btn-iniciar").innerText = "▶ INICIAR JOGO"
+    document.querySelector("#btn-iniciar").innerText = "▶ NOVO JOGO"
 
 
 configurar_interface()
