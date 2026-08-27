@@ -1,60 +1,66 @@
 # A Casa que Lembra
 
-Jogo de terror em texto. Você acorda no quarto de infância — a casa está vazia há 12 anos. Algo com o seu rosto caminha nos corredores.
+Terror narrativo interativo no framework **PyScript GameJam V2**.
 
-## Versão 8-bit dark (navegador)
+Você acorda no quarto de infância. A casa está vazia há 12 anos. Algo com o seu rosto caminha nos corredores.
 
-Interface visual inspirada em UI pixel (boxes, scanlines, Press Start 2P / VT323), com pegada **noir dark** da história.
+**Autor:** lucas lohan
 
-**Online:** (após deploy Vercel) · **Repo:** https://github.com/hzy1kk/casa-que-lembra
+## Jogar online
 
-```bash
-cd web
-python3 -m http.server 8080
-```
+Após o deploy Vercel: [casa-que-lembra.vercel.app](https://casa-que-lembra.vercel.app)
 
-Abra http://localhost:8080
-
-Arquivos: [`web/index.html`](web/index.html) · [`web/styles.css`](web/styles.css) · [`web/game.js`](web/game.js) · [`web/art/`](web/art/)
-
-### Deploy Vercel
-
-O site estático sai da pasta `web/` (`vercel.json`). Importar o repo no [Vercel](https://vercel.com/new) ou:
+## Executar localmente
 
 ```bash
-npx vercel --prod
+python3 -m http.server 8000
 ```
 
-## Terminal (Python)
+Abra http://localhost:8000
 
-```bash
-python3 main.py
-```
+No Windows, também pode usar `INICIAR_JOGO.bat`.
 
-### Google Colab
-
-Abra o notebook [`casa_que_lembra_colab.ipynb`](casa_que_lembra_colab.ipynb) no [Colab](https://colab.research.google.com/) (Arquivo → Fazer upload do notebook). Rode a célula do código e depois `jogar()`.
-
-Cada escolha gasta **1 interação** (máximo **15**). Se o tempo acabar, a casa escolhe por você.
-
-## Objetivo
-
-Explorar a casa, reunir pistas e itens, e enfrentar o eco no espelho. Há vários finais — fuga, verdade, troca, ritual secreto, morte e atraso.
-
-## Itens
-
-| Item | Onde | Para quê |
-|------|------|----------|
-| Fósforos | Cozinha | Luz no sótão/porão; ajuda na fuga |
-| Chave enferrujada | Sala | Abre o porão |
-| Fita cassete | Sótão | Pista para o final da verdade / ritual |
-| Vela | Sótão (com fósforos) | Ritual secreto no espelho |
-| Foto rasgada | Porão (com luz) | Pista para o final da verdade |
+Não abra `index.html` por `file://` — use o servidor HTTP (o PyScript precisa disso).
 
 ## Estrutura
 
 ```
-main.py / cenas/   — versão terminal
-web/               — versão 8-bit dark no navegador
-casa_que_lembra_colab.ipynb
+index.html          — interface PyScript (responsiva, botões)
+main.py             — CONFIG, STATE, SCENES, regras (executar_acao)
+assets/imagens/     — capa e artes das cenas
+assets/audios/      — trilhas + SFX
+assets/videos/      — introdução e fita
+docs/mapa-cenas.md — mapa de cômodos, itens e finais
+legado/             — versão anterior (terminal + web 8-bit)
+backups/            — backup .tar.gz do jogo funcional
 ```
+
+## Mecânicas
+
+- **Vida**, inventário, pontuação e **turnos (máx. 15 explorando)**
+- Cada clique de escolha gasta 1 turno; aos 15 fora do espelho a casa escolhe (`fim_atrasado`)
+- No confronto do espelho você ainda pode fechar um final
+- Decisões condicionadas a itens (porão, quarto dos pais, verdade, ritual)
+- **Save / Continuar** e **ranking** no `localStorage` do navegador
+- SFX curtos (porta, passos, TV, dano) + trilhas por cena
+- Até **4 opções** por cena (só botões — sem `input()`)
+- Reiniciar aventura / Novo jogo
+
+## Finais (resumo)
+
+| Final | Como |
+|-------|------|
+| Fuga | No espelho, correr com chave ou fósforos |
+| Verdade | Confrontar com fita + foto |
+| O Eco sai | Aceitar trocar de lugar |
+| Ritual (secreto) | Vela + fósforos + fita (enigma/pedra dão bônus) |
+| Morte | Vida 0 ou confronto sem pistas |
+| Atrasado | 15 turnos sem fechar um final |
+
+Mapa completo: [`docs/mapa-cenas.md`](docs/mapa-cenas.md)
+
+## Entrega escolar
+
+1. Suba a pasta no GitHub (ou use o ZIP de entrega).
+2. Conecte o repositório na Vercel (build estático; `vercel.json` já incluso).
+3. Para apresentar offline: rode `python3 -m http.server 8000` ou o `.bat`.

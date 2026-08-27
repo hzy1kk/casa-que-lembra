@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#030304" />
+    <title>A Casa que Lembra</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Share+Tech+Mono&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="https://pyscript.net/releases/2025.3.1/core.css" />
+    <script type="module" src="https://pyscript.net/releases/2025.3.1/core.js"></script>
+    <style>
+      :root {
+        --bg: #030304;
+        --panel: #0b0b0f;
+        --line: #1a1a20;
+        --text: #c8c4bc;
+        --muted: #6a6660;
+        --blood: #6e1c24;
+        --blood-hot: #a02834;
+        --amber: #8a5a28;
+      }
+
+      * { box-sizing: border-box; }
+
+      html, body {
+        margin: 0;
+        height: 100%;
+        background: var(--bg);
+        color: var(--text);
+        font-family: "Cormorant Garamond", Georgia, serif;
+        overflow: hidden;
+      }
+
+      body {
+        display: flex;
+        flex-direction: column;
+        min-height: 100dvh;
+      }
+
+      #boot {
+        position: fixed;
+        inset: 0;
+        z-index: 40;
+        display: grid;
+        place-items: center;
+        background: radial-gradient(ellipse at center, #12080c 0%, #030304 70%);
+        padding: 1.25rem;
+        text-align: center;
+      }
+
+      #boot.hidden { display: none; }
+      .hidden { display: none !important; }
+
+      #boot-cover {
+        width: min(100%, 420px);
+        aspect-ratio: 16 / 10;
+        object-fit: cover;
+        border: 1px solid #000;
+        margin-bottom: 1rem;
+        filter: brightness(0.7) contrast(1.1);
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7);
+      }
+
+      #boot-cover.hidden { display: none; }
+
+      #boot-icon { font-size: 2rem; margin: 0 0 0.4rem; }
+
+      #boot-title {
+        margin: 0;
+        font-size: clamp(1.8rem, 6vw, 2.6rem);
+        font-weight: 600;
+        letter-spacing: 0.02em;
+      }
+
+      #boot-sub {
+        margin: 0.4rem 0 0;
+        color: var(--muted);
+        font-style: italic;
+        font-size: 1.15rem;
+      }
+
+      #boot-author {
+        margin: 0.75rem 0 1.4rem;
+        font-family: "Share Tech Mono", monospace;
+        font-size: 0.78rem;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--blood-hot);
+      }
+
+      #btn-iniciar,
+      #btn-continuar,
+      #btn-reiniciar,
+      .opt-btn {
+        font-family: "Share Tech Mono", monospace;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        cursor: pointer;
+        border: 1px solid var(--blood);
+        background: #12080a;
+        color: var(--text);
+        transition: background 0.15s ease, transform 0.15s ease;
+      }
+
+      #btn-iniciar {
+        min-height: 52px;
+        padding: 0.85rem 1.4rem;
+        font-size: 0.85rem;
+        background: var(--blood);
+      }
+
+      #btn-continuar {
+        min-height: 44px;
+        padding: 0.7rem 1rem;
+        font-size: 0.78rem;
+        background: transparent;
+      }
+
+      #boot-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        width: min(100%, 320px);
+        margin: 0 auto;
+      }
+
+      #ranking-box {
+        margin-top: 1.1rem;
+        width: min(100%, 360px);
+        text-align: left;
+      }
+
+      #ranking-box > p {
+        font-family: "Share Tech Mono", monospace;
+        font-size: 0.65rem;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--blood-hot);
+        margin: 0 0 0.4rem;
+      }
+
+      #ranking-lista {
+        margin: 0;
+        padding-left: 1.2rem;
+        font-family: "Share Tech Mono", monospace;
+        font-size: 0.72rem;
+        color: var(--muted);
+      }
+
+      #btn-iniciar:hover,
+      #btn-continuar:hover,
+      #btn-reiniciar:hover,
+      .opt-btn:hover {
+        background: var(--blood-hot);
+        color: #fff;
+      }
+
+      #app {
+        flex: 1;
+        display: none;
+        flex-direction: column;
+        min-height: 0;
+        max-width: 1200px;
+        width: 100%;
+        margin: 0 auto;
+        padding: 0.75rem;
+        gap: 0.65rem;
+      }
+
+      #app.visible { display: flex; }
+
+      #topo {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 0.5rem 1rem;
+        border-bottom: 1px solid var(--line);
+        padding-bottom: 0.55rem;
+      }
+
+      #titulo-jogo {
+        margin: 0;
+        font-size: clamp(1.2rem, 3vw, 1.6rem);
+        font-weight: 600;
+      }
+
+      #autor-jogo {
+        margin: 0;
+        font-family: "Share Tech Mono", monospace;
+        font-size: 0.7rem;
+        color: var(--muted);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      #layout {
+        flex: 1;
+        min-height: 0;
+        display: grid;
+        gap: 0.75rem;
+      }
+
+      #midia {
+        background: #000;
+        border: 1px solid #000;
+        position: relative;
+        overflow: hidden;
+        min-height: 0;
+      }
+
+      #cena-imagem,
+      #cena-video {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+      }
+
+      #cena-imagem.hidden,
+      #cena-video.hidden { display: none; }
+
+      #cena-imagem, #cena-video {
+        transition: opacity 280ms ease;
+      }
+      #cena-imagem.is-fade, #cena-video.is-fade { opacity: 0; }
+
+      #audio-player {
+        width: 100%;
+        height: 32px;
+        margin-top: 0.35rem;
+      }
+
+      #painel {
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+        background: var(--panel);
+        border: 1px solid var(--line);
+        padding: 0.85rem;
+        gap: 0.7rem;
+        position: relative;
+        z-index: 2;
+      }
+
+      #cena-titulo {
+        margin: 0;
+        font-family: "Share Tech Mono", monospace;
+        font-size: 0.78rem;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--blood-hot);
+      }
+
+      #cena-texto {
+        flex: 1;
+        min-height: 0;
+        overflow-y: auto;
+        margin: 0;
+        white-space: pre-wrap;
+        font-size: clamp(1.05rem, 2.2vw, 1.28rem);
+        line-height: 1.4;
+      }
+
+      #status {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.55rem 1rem;
+        font-family: "Share Tech Mono", monospace;
+        font-size: 0.72rem;
+        color: var(--muted);
+        border-top: 1px solid var(--line);
+        border-bottom: 1px solid var(--line);
+        padding: 0.55rem 0;
+      }
+
+      #status strong { color: var(--text); font-weight: 400; }
+
+      #opcoes {
+        display: grid;
+        gap: 0.45rem;
+      }
+
+      .opt-btn {
+        width: 100%;
+        min-height: 48px;
+        padding: 0.65rem 0.8rem;
+        text-align: left;
+        font-size: 0.78rem;
+      }
+
+      .opt-btn.hidden { display: none; }
+
+      #rodape-acoes {
+        display: flex;
+        justify-content: flex-end;
+      }
+
+      #btn-reiniciar {
+        min-height: 40px;
+        padding: 0.45rem 0.8rem;
+        font-size: 0.68rem;
+        background: transparent;
+      }
+
+      #loading {
+        position: fixed;
+        inset: 0;
+        z-index: 50;
+        display: grid;
+        place-items: center;
+        background: var(--bg);
+        font-family: "Share Tech Mono", monospace;
+        font-size: 0.8rem;
+        color: var(--muted);
+      }
+
+      #loading.hidden { display: none; }
+
+      /* Horizontal */
+      @media (orientation: landscape) {
+        #layout {
+          grid-template-columns: 1.15fr 1fr;
+          grid-template-rows: 1fr;
+        }
+        #midia { min-height: 0; }
+      }
+
+      /* Vertical */
+      @media (orientation: portrait) {
+        #layout {
+          grid-template-columns: 1fr;
+          grid-template-rows: minmax(180px, 34vh) 1fr;
+        }
+      }
+
+      @media (max-width: 640px) {
+        #app { padding: 0.55rem; }
+        .opt-btn { font-size: 0.7rem; }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="loading">Carregando a casa…</div>
+
+    <div id="boot">
+      <img id="boot-cover" class="hidden" alt="" />
+      <div id="boot-icon"></div>
+      <h1 id="boot-title">A Casa que Lembra</h1>
+      <p id="boot-sub"></p>
+      <p id="boot-author"></p>
+      <div id="boot-actions">
+        <button type="button" id="btn-iniciar" disabled>Carregando…</button>
+        <button type="button" id="btn-continuar" class="hidden">▶ Continuar</button>
+      </div>
+      <div id="ranking-box">
+        <p>Melhores pontuações</p>
+        <ol id="ranking-lista"></ol>
+      </div>
+    </div>
+
+    <div id="app">
+      <header id="topo">
+        <h1 id="titulo-jogo">A Casa que Lembra</h1>
+        <p id="autor-jogo"></p>
+      </header>
+
+      <div id="layout">
+        <section id="midia-wrap">
+          <div id="midia">
+            <img id="cena-imagem" alt="" />
+            <video id="cena-video" class="hidden" controls playsinline></video>
+          </div>
+          <audio id="audio-player" controls loop></audio>
+        </section>
+
+        <section id="painel">
+          <h2 id="cena-titulo"></h2>
+          <p id="cena-texto"></p>
+          <div id="status">
+            <span>Vida: <strong id="stat-vida">3</strong></span>
+            <span>Pontos: <strong id="stat-pontos">0</strong></span>
+            <span>Turnos: <strong id="stat-turnos">0/15</strong></span>
+            <span>Inventário: <strong id="stat-inv">nada</strong></span>
+          </div>
+          <div id="opcoes">
+            <button type="button" class="opt-btn hidden" id="opt-0"></button>
+            <button type="button" class="opt-btn hidden" id="opt-1"></button>
+            <button type="button" class="opt-btn hidden" id="opt-2"></button>
+            <button type="button" class="opt-btn hidden" id="opt-3"></button>
+          </div>
+          <div id="rodape-acoes">
+            <button type="button" id="btn-reiniciar">↻ Reiniciar aventura</button>
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <script>
+      function tocarSfx(src) {
+        if (!src) return;
+        try {
+          const a = new Audio(src);
+          a.volume = 0.55;
+          a.play();
+        } catch (e) {}
+      }
+      window.tocarSfx = tocarSfx;
+
+      /** Fade curto na troca de imagem/vídeo (chamado pelo Python). */
+      window.aplicarMidiaCena = function (video, image, videoAutoplay) {
+        const img = document.getElementById("cena-imagem");
+        const vid = document.getElementById("cena-video");
+        if (!img || !vid) return;
+        img.classList.add("is-fade");
+        vid.classList.add("is-fade");
+        setTimeout(() => {
+          if (video) {
+            img.classList.add("hidden");
+            vid.classList.remove("hidden");
+            vid.src = video;
+            if (videoAutoplay) {
+              try { vid.play(); } catch (e) {}
+            } else {
+              try { vid.pause(); } catch (e) {}
+            }
+          } else {
+            vid.classList.add("hidden");
+            try { vid.pause(); } catch (e) {}
+            vid.removeAttribute("src");
+            img.classList.remove("hidden");
+            img.src = image || "";
+          }
+          img.classList.remove("is-fade");
+          vid.classList.remove("is-fade");
+        }, 140);
+      };
+
+      function wireUi() {
+        const iniciar = document.getElementById("btn-iniciar");
+        const continuar = document.getElementById("btn-continuar");
+        const reiniciar = document.getElementById("btn-reiniciar");
+        if (iniciar) {
+          iniciar.addEventListener("click", () => {
+            tocarSfx("assets/audios/sfx_click.mp3");
+            if (window.iniciar_jogo) window.iniciar_jogo();
+          });
+        }
+        if (continuar) {
+          continuar.addEventListener("click", () => {
+            tocarSfx("assets/audios/sfx_click.mp3");
+            if (window.continuar_jogo) window.continuar_jogo();
+          });
+        }
+        if (reiniciar) {
+          reiniciar.addEventListener("click", () => {
+            tocarSfx("assets/audios/sfx_click.mp3");
+            if (window.reiniciar_aventura) window.reiniciar_aventura();
+          });
+        }
+        for (let i = 0; i < 4; i++) {
+          const btn = document.getElementById("opt-" + i);
+          if (!btn) continue;
+          btn.addEventListener("click", () => {
+            const acao = btn.getAttribute("data-acao");
+            tocarSfx("assets/audios/sfx_click.mp3");
+            if (acao && window.executar_acao_js) window.executar_acao_js(String(acao));
+          });
+        }
+      }
+      wireUi();
+    </script>
+
+    <script type="py" src="./main.py"></script>
+  </body>
+</html>
