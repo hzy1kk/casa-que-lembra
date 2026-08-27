@@ -310,12 +310,10 @@ def mostrar_cena(nome):
 
     # Fade + troca de mídia via helper JS (evita proxies temporários no setTimeout)
     try:
-        payload = {
-            "video": cena.get("video") or "",
-            "video_autoplay": bool(cena.get("video_autoplay")),
-            "image": cena.get("image") or CONFIG.get("capa") or "",
-        }
-        window.aplicarMidiaCena(payload)
+        video = cena.get("video") or ""
+        image = cena.get("image") or CONFIG.get("capa") or ""
+        autoplay = bool(cena.get("video_autoplay"))
+        window.aplicarMidiaCena(video, image, autoplay)
     except Exception:
         img = document.querySelector("#cena-imagem")
         vid = document.querySelector("#cena-video")
@@ -1357,9 +1355,18 @@ def executar_acao_js(acao):
     if not acao or acao == "None" or acao == "undefined":
         return
 
+    # Partida já encerrada: ignora cliques / chamadas extras
+    if _eh_final(state.get("cena_atual")):
+        return
+
     # Não conta turno em reinícios internos sem clique — só cliques passam aqui
     state["turnos"] += 1
     atualizar_status()
+
+    # Se o 15º turno começa fora de um final já escolhido, a casa decide
+    if state["turnos"] > CONFIG["max_turnos"]:
+        _finalizar("fim_atrasado")
+        return
 
     executar_acao(acao)
 
