@@ -375,10 +375,10 @@
         border-top: 1px solid var(--line);
         backdrop-filter: blur(16px) saturate(1.05);
         box-shadow: 0 -30px 80px rgba(0,0,0,0.65);
-        padding: 0.7rem clamp(0.85rem, 3vw, 1.5rem) max(0.7rem, env(safe-area-inset-bottom));
+        padding: 0.55rem clamp(0.85rem, 3vw, 1.5rem) max(0.55rem, env(safe-area-inset-bottom));
         display: grid;
         grid-template-columns: 1fr;
-        gap: 0.5rem;
+        gap: 0.4rem;
         animation: dockIn 0.45s ease both;
       }
 
@@ -389,14 +389,22 @@
       #narrativa {
         min-width: 0;
         display: grid;
-        gap: 0.35rem;
+        gap: 0.28rem;
         align-content: start;
+      }
+
+      #narrativa-top {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.35rem 0.75rem;
       }
 
       #acoes-wrap {
         min-width: 0;
         display: grid;
-        gap: 0.4rem;
+        gap: 0.35rem;
         align-content: start;
       }
 
@@ -411,19 +419,20 @@
 
       #cena-texto {
         margin: 0;
-        max-height: min(22vh, 170px);
+        max-height: min(18vh, 140px);
         overflow-y: auto;
         white-space: pre-wrap;
         font-size: clamp(1.12rem, 2.2vw, 1.32rem);
-        line-height: 1.3;
+        line-height: 1.28;
         color: var(--ink);
       }
 
       #inv-bar {
         display: flex;
         flex-wrap: wrap;
-        gap: 0.35rem;
-        min-height: 1.2rem;
+        gap: 0.3rem;
+        min-height: 0;
+        justify-content: flex-end;
       }
 
       .inv-chip {
