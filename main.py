@@ -193,6 +193,30 @@ def _eh_final(nome):
     return nome in FINAIS or (nome and nome.startswith("fim_"))
 
 
+def _em_rota_do_espelho(nome):
+    """True se a cena é o confronto ou ainda oferece ir ao espelho / escolher final."""
+    if not nome:
+        return False
+    if nome in CONFRONTACAO or _eh_final(nome):
+        return True
+    cena = SCENES.get(nome) or {}
+    for _, acao in cena.get("options") or []:
+        if acao in (
+            "ir_espelho",
+            "escolher_fuga",
+            "escolher_verdade",
+            "escolher_ritual",
+            "fim_eco",
+            "eco_lembrar",
+            "eco_acabar",
+            "eco_ouvir",
+            "eco_silencio",
+            "espelho",
+        ):
+            return True
+    return False
+
+
 def salvar_jogo():
     """Grava a partida atual no localStorage do navegador."""
     if _eh_final(state.get("cena_atual")):
@@ -1373,11 +1397,10 @@ def executar_acao_js(acao):
     executar_acao(acao)
 
     cena = state.get("cena_atual")
-    # Aos 15 turnos ainda explorando (fora do espelho), a casa decide
+    # Aos 15 turnos ainda explorando (sem caminho ao espelho), a casa decide
     if (
         state["turnos"] >= CONFIG["max_turnos"]
-        and not _eh_final(cena)
-        and cena not in CONFRONTACAO
+        and not _em_rota_do_espelho(cena)
     ):
         _finalizar("fim_atrasado")
         return
