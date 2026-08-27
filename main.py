@@ -29,7 +29,7 @@ CONFIG = {
     "icone": "⌂",
     "capa": "assets/imagens/capa.jpg",
     "trilha_inicial": "assets/audios/trilha_casa.mp3",
-    "volume_inicial": 0.45,
+    "volume_inicial": 0.55,
     "vida_inicial": 3,
     "pontos_iniciais": 0,
     "cena_inicial": "inicio",
@@ -103,13 +103,27 @@ _js_proxies = []
 # ---------------------------------------------------------------------------
 
 def atualizar_status():
-    """Atualiza vida, pontos, turnos e inventário na barra de status."""
+    """Atualiza vida, pontos, turnos e inventário na HUD."""
     document.querySelector("#stat-vida").innerText = str(state["vida"])
     document.querySelector("#stat-pontos").innerText = str(state["pontos"])
     max_t = CONFIG["max_turnos"]
     document.querySelector("#stat-turnos").innerText = f"{state['turnos']}/{max_t}"
     inv = state["inventario"]
-    document.querySelector("#stat-inv").innerText = ", ".join(inv) if inv else "nada"
+    inv_el = document.querySelector("#stat-inv")
+    if inv_el:
+        inv_el.innerText = ", ".join(inv) if inv else "nada"
+
+    # Chips de inventário + alerta de vida baixa
+    try:
+        window.atualizarInventarioUI(json.dumps(list(inv)))
+    except Exception:
+        pass
+    vida_pill = document.querySelector(".stat-pill.vida")
+    if vida_pill:
+        if state["vida"] <= 1:
+            vida_pill.classList.add("low")
+        else:
+            vida_pill.classList.remove("low")
 
 
 def adicionar_item(item, pontos=0):
@@ -146,6 +160,10 @@ def tocar_sfx(chave_ou_caminho):
 
 def perder_vida(n=1):
     tocar_sfx("dano")
+    try:
+        window.flashDano()
+    except Exception:
+        pass
     state["vida"] -= n
     if state["vida"] < 0:
         state["vida"] = 0
@@ -158,33 +176,44 @@ def perder_vida(n=1):
 
 
 def trocar_audio(caminho):
-    player = document.querySelector("#audio-player")
+    """Troca a trilha de fundo via JS (respeita gesto do usuário / autoplay)."""
     if not caminho:
         return
-    if player.getAttribute("src") == caminho and not player.paused:
-        return
-    player.src = caminho
-    player.volume = CONFIG.get("volume_inicial", 0.5)
     try:
-        player.play()
+        window.tocarTrilha(caminho, CONFIG.get("volume_inicial", 0.48))
     except Exception:
-        pass
+        # fallback direto no elemento
+        player = document.querySelector("#audio-player")
+        if not player:
+            return
+        player.src = caminho
+        player.volume = CONFIG.get("volume_inicial", 0.48)
+        try:
+            player.play()
+        except Exception:
+            pass
 
 
 def parar_audio():
-    player = document.querySelector("#audio-player")
     try:
-        player.pause()
-        player.currentTime = 0
+        window.pararTrilha()
     except Exception:
-        pass
-    player.removeAttribute("src")
+        player = document.querySelector("#audio-player")
+        if not player:
+            return
+        try:
+            player.pause()
+            player.currentTime = 0
+        except Exception:
+            pass
+        player.removeAttribute("src")
 
 
 def _esconder_opcoes():
     for i in range(4):
         btn = document.querySelector(f"#opt-{i}")
         btn.classList.add("hidden")
+        btn.classList.remove("show")
         btn.innerText = ""
         btn.setAttribute("data-acao", "")
 
@@ -373,9 +402,15 @@ def mostrar_cena(nome):
         btn.innerText = texto
         btn.setAttribute("data-acao", acao)
         btn.classList.remove("hidden")
+        btn.classList.remove("show")
+
+    try:
+        window.animarPainel()
+        window.mostrarOpcoesAnimadas()
+    except Exception:
+        pass
 
     if _eh_final(nome):
-        # Evita salvar finais; ranking já registrado em _ao_chegar_final quando aplicável
         pass
     else:
         salvar_jogo()
@@ -1422,13 +1457,12 @@ def configurar_interface():
     document.querySelector("#titulo-jogo").innerText = CONFIG["titulo"]
     document.querySelector("#autor-jogo").innerText = CONFIG.get("autor", "")
 
-    capa = CONFIG.get("capa")
+    # Capa de boot agora é CSS full-bleed (#boot-bg); só atualiza se o elemento existir
     cover = document.querySelector("#boot-cover")
-    if capa:
+    capa = CONFIG.get("capa")
+    if cover is not None and capa:
         cover.src = capa
         cover.classList.remove("hidden")
-    else:
-        cover.classList.add("hidden")
 
     # Expõe funções para o JavaScript (guarda proxies para o GC não liberar)
     global _js_proxies
