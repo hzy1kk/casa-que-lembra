@@ -2,7 +2,7 @@
 
 Terror narrativo interativo no framework **PyScript GameJam V2**.
 
-Você acorda no quarto de infância. A casa está vazia há 12 anos. Algo com o seu rosto caminha nos corredores.
+Você voltou à casa da infância, vazia há 12 anos. Quando criança, prometeu que não a deixaria sozinha — e deixou um **eco** no seu lugar. A casa conta até 15. Junte provas e enfrente o espelho do porão.
 
 **Autor:** lucas lohan
 
@@ -50,12 +50,12 @@ backups/            — backup .tar.gz do jogo funcional
 
 | Final | Como |
 |-------|------|
-| Fuga | No espelho, correr com chave ou fósforos |
-| Verdade | Confrontar com fita + foto |
-| O Eco sai | Aceitar trocar de lugar |
-| Ritual (secreto) | Vela + fósforos + fita (enigma/pedra dão bônus) |
-| Morte | Vida 0 ou confronto sem pistas |
-| Atrasado | 15 turnos sem fechar um final |
+| Fuga | Correr com chave ou fósforos — o eco fica |
+| Verdade | Fita + foto: você nomeia o eco |
+| Troca | Aceitar trocar de lugar |
+| Libertação | Vela + fósforos + fita + apelido Casinha |
+| Sem prova / falhas | Espelho sem pistas, fuga ou verdade incompletas |
+| Quinze | 15 turnos sem fechar um final |
 
 Mapa completo: [`docs/mapa-cenas.md`](docs/mapa-cenas.md)
 
