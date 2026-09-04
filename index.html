@@ -264,6 +264,9 @@
         background: #0a0708;
       }
 
+      #cena-imagem { z-index: 0; }
+      #cena-video { z-index: 1; }
+
       #cena-imagem {
         opacity: 1;
         transform: scale(1.01);
@@ -840,7 +843,7 @@
 
       <div id="stage">
         <img id="cena-imagem" alt="" decoding="async" fetchpriority="high" />
-        <video id="cena-video" class="hidden" playsinline preload="none" muted></video>
+        <video id="cena-video" class="hidden" playsinline preload="auto" muted loop></video>
         <div id="stage-fx"></div>
         <div id="flash-dano"></div>
       </div>
@@ -1082,48 +1085,78 @@
           const vid = document.getElementById("cena-video");
           if (!img || !vid) return;
           video = absUrl(video);
-          image = absUrl(image);
+          image = absUrl(image || "/assets/imagens/capa.jpg");
 
           img.classList.add("is-fade");
           vid.classList.add("is-fade");
 
+          const showStill = () => {
+            try { vid.pause(); } catch (e) {}
+            vid.classList.add("hidden");
+            vid.removeAttribute("src");
+            vid.removeAttribute("poster");
+            vid.removeAttribute("autoplay");
+            try { vid.load(); } catch (e) {}
+            setStageImage(img, image);
+            img.classList.remove("hidden");
+            img.classList.remove("is-fade");
+            vid.classList.remove("is-fade");
+          };
+
           const swap = () => {
-            // Ambient clips: play short muted looping video when autoplay is on.
-            // Reduced-motion keeps the still image.
+            // Ambient clips: muted looping video under the scene art.
+            // Still image stays as fallback if autoplay/network fails.
             const preferStill = reducedMotion;
             const useVideo = !!(video && videoAutoplay && !preferStill);
-            if (useVideo) {
-              img.classList.add("hidden");
-              img.removeAttribute("src");
-              vid.classList.remove("hidden");
-              vid.muted = true;
-              vid.playsInline = true;
-              vid.loop = true;
-              vid.setAttribute("playsinline", "");
-              if (vid.getAttribute("src") !== video) {
-                vid.poster = image || "";
-                vid.src = video;
-                try { vid.load(); } catch (e) {}
-              }
+            if (!useVideo) {
+              showStill();
+              return;
+            }
+
+            // Keep the still underneath so a failed video never blanks the stage.
+            setStageImage(img, image);
+            img.classList.remove("hidden");
+            vid.classList.remove("hidden");
+            vid.muted = true;
+            vid.defaultMuted = true;
+            vid.playsInline = true;
+            vid.loop = true;
+            vid.autoplay = true;
+            vid.setAttribute("muted", "");
+            vid.setAttribute("playsinline", "");
+            vid.setAttribute("webkit-playsinline", "");
+            vid.setAttribute("autoplay", "");
+            vid.poster = image;
+
+            const onFail = () => {
+              vid.onerror = null;
+              showStill();
+            };
+            vid.onerror = onFail;
+
+            if (vid.getAttribute("src") !== video) {
+              vid.src = video;
+              try { vid.load(); } catch (e) {}
+            }
+
+            const tryPlay = () => {
               const p = vid.play();
               if (p && p.catch) {
                 p.catch(() => {
-                  vid.classList.add("hidden");
-                  vid.removeAttribute("src");
-                  setStageImage(img, image || "/assets/imagens/capa.jpg");
+                  // Autoplay blocked: keep poster/still, hide broken player.
+                  onFail();
                 });
               }
-              img.classList.remove("is-fade");
-              vid.classList.remove("is-fade");
-            } else {
-              try { vid.pause(); } catch (e) {}
-              vid.classList.add("hidden");
-              vid.removeAttribute("src");
-              vid.removeAttribute("poster");
-              try { vid.load(); } catch (e) {}
-              setStageImage(img, image || "/assets/imagens/capa.jpg");
-              vid.classList.remove("is-fade");
+            };
+            if (vid.readyState >= 2) tryPlay();
+            else {
+              vid.addEventListener("canplay", tryPlay, { once: true });
+              // Network/404 only — do not treat slow buffer as failure.
+              vid.addEventListener("error", onFail, { once: true });
             }
+
+            img.classList.remove("is-fade");
+            vid.classList.remove("is-fade");
           };
 
           if (isMobile || reducedMotion) swap();
