@@ -1088,19 +1088,31 @@
           vid.classList.add("is-fade");
 
           const swap = () => {
-            // No mobile/desktop: usa imagem por padrão.
-            // Vídeo só carrega se autoplay estiver ativo (mais leve e evita tela preta).
-            const useVideo = !!(video && videoAutoplay);
+            // Ambient clips: play short muted looping video when autoplay is on.
+            // Reduced-motion keeps the still image.
+            const preferStill = reducedMotion;
+            const useVideo = !!(video && videoAutoplay && !preferStill);
             if (useVideo) {
               img.classList.add("hidden");
               img.removeAttribute("src");
               vid.classList.remove("hidden");
+              vid.muted = true;
+              vid.playsInline = true;
+              vid.loop = true;
+              vid.setAttribute("playsinline", "");
               if (vid.getAttribute("src") !== video) {
                 vid.poster = image || "";
                 vid.src = video;
                 try { vid.load(); } catch (e) {}
               }
-              try { vid.play(); } catch (e) {}
+              const p = vid.play();
+              if (p && p.catch) {
+                p.catch(() => {
+                  vid.classList.add("hidden");
+                  vid.removeAttribute("src");
+                  setStageImage(img, image || "/assets/imagens/capa.jpg");
+                });
+              }
               img.classList.remove("is-fade");
               vid.classList.remove("is-fade");
             } else {

@@ -502,8 +502,8 @@ SCENES = {
     "inicio": {
         "title": "O quarto de infância",
         "image": "/assets/imagens/inicio.jpg",
-        "video": "/assets/videos/introducao.mp4",
-        "video_autoplay": False,
+        "video": "/assets/videos/cena_inicio.mp4",
+        "video_autoplay": True,
         "text": (
             "Você voltou para a casa onde cresceu. Está vazia há doze anos — "
             "desde o dia em que você saiu e não olhou para trás.\n\n"
@@ -537,6 +537,8 @@ SCENES = {
     "corredor": {
         "title": "O corredor",
         "image": "/assets/imagens/corredor.jpg",
+        "video": "/assets/videos/cena_corredor.mp4",
+        "video_autoplay": True,
         "sfx": "passos",
         "text": (
             "O corredor é o centro da casa. Os passos atrasados ecoam no fundo.\n\n"
@@ -555,6 +557,8 @@ SCENES = {
     "corredor_mais": {
         "title": "Outros caminhos",
         "image": "/assets/imagens/corredor.jpg",
+        "video": "/assets/videos/cena_corredor.mp4",
+        "video_autoplay": True,
         "text": (
             "A porta dos fundos leva ao jardim — o apelido da casa está lá.\n\n"
             "Chamar quem anda atrasado é perigoso: o eco responde com a sua voz."
@@ -818,6 +822,8 @@ SCENES = {
     "tv_estatica": {
         "title": "A TV",
         "image": "/assets/imagens/tv_estatica.jpg",
+        "video": "/assets/videos/cena_tv.mp4",
+        "video_autoplay": True,
         "sfx": "tv",
         "text": (
             "Estática. No chiado, alguém conta: um… dois… três…\n\n"
@@ -831,6 +837,8 @@ SCENES = {
     "tv_aviso": {
         "title": "O recado da TV",
         "image": "/assets/imagens/tv_estatica.jpg",
+        "video": "/assets/videos/cena_tv.mp4",
+        "video_autoplay": True,
         "sfx": "tv",
         "text": (
             "Com a fita ainda na cabeça, a estática fica clara:\n"
@@ -994,6 +1002,8 @@ SCENES = {
     "dialogo_eco": {
         "title": "O eco fala",
         "image": "/assets/imagens/dialogo_eco.jpg",
+        "video": "/assets/videos/cena_espelho.mp4",
+        "video_autoplay": True,
         "audio": "/assets/audios/trilha_espelho.mp3",
         "text": (
             "Do outro lado do vidro, o seu rosto atrasado pergunta:\n"
@@ -1011,6 +1021,8 @@ SCENES = {
     "espelho": {
         "title": "O confronto",
         "image": "/assets/imagens/espelho.jpg",
+        "video": "/assets/videos/cena_espelho.mp4",
+        "video_autoplay": True,
         "audio": "/assets/audios/trilha_espelho.mp3",
         "text": (
             "O eco sorri com o seu sorriso.\n"
