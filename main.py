@@ -24,7 +24,7 @@ except ImportError:
 
 CONFIG = {
     "titulo": "A Casa que Lembra",
-    "subtitulo": "Algo com o seu rosto caminha nos corredores",
+    "subtitulo": "Você deixou alguém no seu lugar. Agora ele quer a casa de volta.",
     "autor": "lucas lohan",
     "icone": "⌂",
     "capa": "/assets/imagens/capa.jpg",
@@ -55,6 +55,9 @@ FINAIS = {
     "fim_ritual",
     "fim_ruim",
     "fim_atrasado",
+    "fuga_falha",
+    "verdade_falha",
+    "espelho_sem_pista",
 }
 
 # No espelho a contagem “pausa”: o jogador ainda pode escolher o final
@@ -314,6 +317,9 @@ def registrar_ranking(final_id):
         "fim_ritual": "Ritual secreto",
         "fim_ruim": "Morte",
         "fim_atrasado": "Atrasado",
+        "fuga_falha": "Fuga falhou",
+        "verdade_falha": "Verdade sem prova",
+        "espelho_sem_pista": "Sem lembrar",
     }
     entrada = {
         "pontos": state["pontos"],
@@ -484,40 +490,48 @@ def _finalizar(nome_cena, pontos_extra=0):
 # ---------------------------------------------------------------------------
 # SCENES — cada chave é uma tela do jogo
 # options: lista de (texto_do_botão, nome_da_ação) — máximo 4
+#
+# História (o que precisa fazer sentido):
+# Aos 8 anos você prometeu à casa que não a deixaria sozinha.
+# Aos 18, foi embora. A casa ficou com um "eco": uma cópia sua, atrasada.
+# Doze anos depois você volta e acorda no quarto. A casa conta até 15.
+# Objetivo: juntar provas, ir ao espelho do porão e escolher o que fazer.
 # ---------------------------------------------------------------------------
 
 SCENES = {
     "inicio": {
-        "title": "O quarto",
+        "title": "O quarto de infância",
         "image": "/assets/imagens/inicio.jpg",
         "video": "/assets/videos/introducao.mp4",
         "video_autoplay": False,
         "text": (
-            "Você acorda suando frio.\n\n"
-            "O papel de parede floral está descascado nas bordas. "
-            "O colchão cheira a mofo e a sabão em pó antigo — o cheiro da infância.\n\n"
-            "No espelho rachado do guarda-roupa, o reflexo pisca um segundo depois de você.\n\n"
-            "Na mesinha, um bilhete na sua letra:\n"
-            "\"Não abra a porta se ela já estiver aberta.\"\n\n"
-            "A porta do quarto já está aberta."
+            "Você voltou para a casa onde cresceu. Está vazia há doze anos — "
+            "desde o dia em que você saiu e não olhou para trás.\n\n"
+            "Acordou no seu antigo quarto. O colchão cheira a mofo e a sabão em pó.\n\n"
+            "No guarda-roupa, o reflexo pisca meio segundo depois de você.\n\n"
+            "Na mesinha, um bilhete na sua letra de criança:\n"
+            "\"Não deixe a casa sozinha. Se for embora, deixe alguém no seu lugar.\"\n\n"
+            "Do corredor, passos imitam os seus — atrasados. A casa está contando."
         ),
         "options": [
-            ("Levantar e ir ao corredor", "ir_corredor"),
-            ("Olhar o bilhete de novo", "ler_bilhete"),
+            ("Ler o verso do bilhete", "ler_bilhete"),
+            ("Ir ao corredor agora", "ir_corredor"),
         ],
     },
     "bilhete": {
-        "title": "O verso do bilhete",
+        "title": "O verso",
         "image": "/assets/imagens/inicio.jpg",
         "text": (
-            "O papel está úmido, como se tivesse acabado de ser escrito.\n\n"
-            "No verso, em letra menor, trêmula:\n"
-            "\"Ela conta até quinze. Depois, a casa escolhe por você.\"\n\n"
-            "O reflexo no espelho rachado agora está imóvel — demais.\n\n"
-            "Você larga o bilhete e atravessa a porta."
+            "No verso, a letra treme:\n"
+            "\"Ela conta até quinze. Depois o que ficou no seu lugar vira você.\"\n\n"
+            "Você lembra: aos oito anos, com medo de dormir sozinho, "
+            "prometeu à casa que nunca iria embora.\n\n"
+            "Aos dezoito, foi. Alguém — ou algo — ficou.\n\n"
+            "Objetivo: achar provas do que você fez, descer ao porão "
+            "e enfrentar o eco no espelho. Antes do quinze."
         ),
         "options": [
-            ("Seguir para o corredor", "corredor"),
+            ("Ir ao corredor", "corredor"),
         ],
     },
     "corredor": {
@@ -525,31 +539,30 @@ SCENES = {
         "image": "/assets/imagens/corredor.jpg",
         "sfx": "passos",
         "text": (
-            "O corredor é estreito demais para uma casa. "
-            "As paredes parecem ter se aproximado com os anos.\n\n"
-            "Uma lâmpada amarela treme no teto. Longe, passos imitam os seus "
-            "com meio segundo de atraso — clic… clic.\n\n"
-            "À esquerda: a cozinha. À direita: a sala.\n"
-            "No fundo, escadas. A porta dos fundos leva ao jardim."
+            "O corredor é o centro da casa. Os passos atrasados ecoam no fundo.\n\n"
+            "Cozinha: luz (fósforos).\n"
+            "Sala: chave do porão.\n"
+            "Escadas: sótão (memória) e porão (o espelho).\n"
+            "Jardim e outros caminhos ficam mais adiante."
         ),
         "options": [
-            ("Ir à cozinha", "cozinha"),
-            ("Ir à sala", "sala"),
+            ("Ir à cozinha (fósforos)", "cozinha"),
+            ("Ir à sala (chave)", "sala"),
             ("Usar as escadas", "escadas"),
-            ("Mais caminhos…", "corredor_mais"),
+            ("Jardim e outros caminhos", "corredor_mais"),
         ],
     },
     "corredor_mais": {
         "title": "Outros caminhos",
         "image": "/assets/imagens/corredor.jpg",
         "text": (
-            "A porta dos fundos range com o vento.\n"
-            "No escuro do corredor, alguém espera ser chamado pelo nome."
+            "A porta dos fundos leva ao jardim — o apelido da casa está lá.\n\n"
+            "Chamar quem anda atrasado é perigoso: o eco responde com a sua voz."
         ),
         "options": [
-            ("Ir ao jardim", "jardim"),
+            ("Ir ao jardim (apelido)", "jardim"),
             ("Chamar quem está aí", "chamar_eco"),
-            ("Voltar", "corredor"),
+            ("Voltar ao corredor", "corredor"),
         ],
     },
     "escadas": {
@@ -557,9 +570,10 @@ SCENES = {
         "image": "/assets/imagens/corredor.jpg",
         "sfx": "passos",
         "text": (
-            "A escada sobe para o sótão empoeirado.\n"
-            "A escada desce para a porta enferrujada do porão.\n\n"
-            "Os passos atrasados esperam a sua escolha."
+            "Para cima: o sótão. Lá está a fita que você gravou criança — "
+            "a prova da promessa. Também há uma vela.\n\n"
+            "Para baixo: o porão. A porta pede a chave da sala. "
+            "No fundo, o espelho onde o eco espera."
         ),
         "options": [
             ("Subir ao sótão", "sotao"),
@@ -568,14 +582,13 @@ SCENES = {
         ],
     },
     "eco_responde": {
-        "title": "Sua voz responde",
+        "title": "O eco responde",
         "image": "/assets/imagens/eco_responde.jpg",
         "text": (
-            "Você engole seco e grita: \"Tem alguém aí?\"\n\n"
-            "O silêncio engorda. Então, do fundo do corredor, "
-            "a sua própria voz responde — um pouco mais baixa, um pouco mais alegre:\n\n"
+            "Você grita: \"Tem alguém aí?\"\n\n"
+            "Do fundo do corredor a sua voz volta, um pouco mais alegre:\n"
             "\"Tem alguém aí?\"\n\n"
-            "Os passos atrasados aceleram. Algo frio roça sua nuca.\n\n"
+            "O eco se aproxima. Frio na nuca. Ele não gosta de ser chamado sem nome.\n\n"
             "Você perdeu uma vida."
         ),
         "options": [
@@ -587,25 +600,26 @@ SCENES = {
         "image": "/assets/imagens/jardim.jpg",
         "sfx": "passos",
         "text": (
-            "O quintal está morto, mas a terra ainda cheira a chuva de infância.\n\n"
-            "Sob a roseira seca, uma pedra lisa com um apelido riscato a unha:\n"
-            "\"CASINHA\".\n\n"
-            "É o nome que você dava à casa quando tinha medo de dormir sozinho."
+            "O quintal está morto, mas a terra ainda cheira a chuva.\n\n"
+            "Sob a roseira, uma pedra com o apelido que você dava à casa:\n"
+            "CASINHA.\n\n"
+            "Era assim que você acalmava o medo: dizia o nome em voz alta. "
+            "Se for libertar o eco, vai precisar desse nome."
         ),
         "options": [
-            ("Pegar a pedra do jardim", "pegar_pedra"),
+            ("Pegar a pedra com o apelido", "pegar_pedra"),
             ("Voltar ao corredor", "corredor"),
         ],
     },
     "item_pedra": {
-        "title": "Pedra do jardim",
+        "title": "O apelido",
         "image": "/assets/imagens/jardim.jpg",
         "text": (
-            "Você guarda a pedra. O apelido queima na palma como se ainda estivesse quente.\n\n"
-            "A casa parece ter ouvido o próprio nome."
+            "Você guarda a pedra. CASINHA.\n\n"
+            "A casa parece ter ouvido. O vento no quintal para um segundo.\n\n"
+            "Agora você tem o nome verdadeiro — peça do ritual de libertação."
         ),
         "options": [
-            ("Ficar no jardim", "jardim"),
             ("Voltar ao corredor", "corredor"),
         ],
     },
@@ -613,11 +627,10 @@ SCENES = {
         "title": "A cozinha",
         "image": "/assets/imagens/cozinha.jpg",
         "text": (
-            "A cozinha cheira a gás antigo e laranja podre.\n\n"
-            "Na pia, um prato com comida ainda quente. "
-            "Ninguém mora aqui há doze anos.\n\n"
-            "Na parede, riscos profundos: CONTANDO ATÉ QUINZE.\n\n"
-            "Na gaveta da esquerda, uma caixa de fósforos."
+            "Na parede, riscos: 1 2 3… a casa está contando até quinze.\n\n"
+            "Na pia, um prato ainda quente. Ninguém mora aqui. "
+            "O eco cozinha no seu horário, atrasado.\n\n"
+            "Na gaveta: fósforos. Sem eles o sótão e o porão ficam escuros demais."
         ),
         "options": [
             ("Pegar os fósforos", "pegar_fosforos"),
@@ -629,9 +642,8 @@ SCENES = {
         "title": "A cozinha",
         "image": "/assets/imagens/cozinha.jpg",
         "text": (
-            "A gaveta da esquerda está aberta e vazia. "
-            "Você já pegou os fósforos.\n\n"
-            "O vapor da comida ainda sobe em espirais lentas."
+            "Você já pegou os fósforos. O vapor da comida ainda sobe.\n\n"
+            "Na parede, o risco do número avança sozinho."
         ),
         "options": [
             ("Voltar ao corredor", "corredor"),
@@ -641,10 +653,10 @@ SCENES = {
         "title": "A segunda mão",
         "image": "/assets/imagens/cozinha.jpg",
         "text": (
-            "Você encosta o dedo no arroz. Escaldante.\n\n"
-            "Por um instante, vê uma segunda mão — a sua, mais nova — "
-            "fazendo o mesmo gesto do outro lado do vapor.\n\n"
-            "A visão some. O prato continua lá."
+            "O arroz queima o dedo. Do outro lado do vapor, "
+            "uma mão igual à sua — mais nova — faz o mesmo gesto.\n\n"
+            "O eco está na casa. Ele come, anda, espera.\n\n"
+            "Os fósforos ainda estão na gaveta."
         ),
         "options": [
             ("Pegar os fósforos agora", "pegar_fosforos"),
@@ -652,11 +664,11 @@ SCENES = {
         ],
     },
     "item_fosforos": {
-        "title": "Três chances",
+        "title": "Fósforos",
         "image": "/assets/imagens/cozinha.jpg",
         "text": (
-            "Você guarda os fósforos. A caixa é leve demais — quase vazia.\n\n"
-            "Dentro, restam três palitos. Três chances."
+            "Três palitos. Luz para o sótão e o porão. "
+            "Também servem para acender a vela no ritual, ou para ver a porta da frente na fuga."
         ),
         "options": [
             ("Voltar ao corredor", "corredor"),
@@ -666,33 +678,30 @@ SCENES = {
         "title": "A sala",
         "image": "/assets/imagens/sala.jpg",
         "text": (
-            "A sala está coberta. O sofá usa um lençol branco manchado de amarelo. "
-            "Relógios parados. Poeira em camadas.\n\n"
-            "A TV de tubo olha para você com a tela morta — um olho cinza, opaco.\n\n"
-            "Na estante, uma gaveta entreaberta. "
-            "No corredor lateral, a porta do quarto dos pais."
+            "Sofá coberto. Relógios parados. A TV de tubo está morta.\n\n"
+            "Na estante, a gaveta da chave do porão.\n"
+            "Ao lado, o quarto dos pais — também abre com essa chave.\n\n"
+            "A TV às vezes mostra o eco. Vale ligar."
         ),
         "options": [
-            ("Abrir a gaveta da estante", "pegar_chave"),
-            ("Examinar a TV", "examinar_tv"),
+            ("Pegar a chave do porão", "pegar_chave"),
+            ("Ligar a TV", "examinar_tv"),
             ("Ir ao quarto dos pais", "quarto_pais"),
             ("Voltar ao corredor", "corredor"),
         ],
     },
     "sala_pista": {
-        "title": "A sala — o rosto",
+        "title": "A sala — o recado",
         "image": "/assets/imagens/tv_estatica.jpg",
         "text": (
-            "A TV liga sozinha. Estática.\n\n"
-            "No meio do ruído branco, um rosto se forma — o seu, mais novo, "
-            "sorrindo sem chegar aos olhos.\n\n"
-            "A gaveta ainda espera. O quarto dos pais também. "
-            "E o rosto na estática parece puxar você para o espelho."
+            "A TV liga sozinha. No meio da estática, o seu rosto de criança.\n\n"
+            "Ele aponta para baixo — para o porão, para o espelho.\n\n"
+            "Você já ouviu a fita. Agora falta descer e ver o eco de frente."
         ),
         "options": [
-            ("Abrir a gaveta", "pegar_chave"),
+            ("Pegar a chave", "pegar_chave"),
             ("Ir ao quarto dos pais", "quarto_pais"),
-            ("Seguir o rosto (espelho)", "ir_espelho"),
+            ("Ir ao espelho do porão", "ir_espelho"),
             ("Voltar ao corredor", "corredor"),
         ],
     },
@@ -701,14 +710,14 @@ SCENES = {
         "image": "/assets/imagens/quarto_pais.jpg",
         "sfx": "porta",
         "text": (
-            "A porta cede com a chave enferrujada. O quarto cheira a perfume velho.\n\n"
-            "Na cômoda, um bilhete dos pais:\n"
-            "\"Se ele acordar de novo, diga o apelido. Conte na ordem certa.\"\n\n"
-            "Ao lado, um envelope lacrado com um enigma desenhado à mão."
+            "A chave abre. Cheiro de perfume velho.\n\n"
+            "Sua mãe escreveu: se o menino que ficou acordar, "
+            "diga o apelido da casa e acenda a vela — não grite, não fuja sem olhar.\n\n"
+            "Há um envelope com um enigma: a ordem do ritual."
         ),
         "options": [
-            ("Ler o bilhete com cuidado", "ler_pais"),
-            ("Abrir o envelope (enigma)", "enigma"),
+            ("Ler o bilhete até o fim", "ler_pais"),
+            ("Abrir o envelope do ritual", "enigma"),
             ("Voltar à sala", "voltar_sala"),
         ],
     },
@@ -717,50 +726,64 @@ SCENES = {
         "image": "/assets/imagens/quarto_pais.jpg",
         "sfx": "porta",
         "text": (
-            "A porta do quarto dos pais não abre.\n"
-            "A fechadura pede a mesma chave do porão."
+            "O quarto dos pais não abre sem a chave da sala — "
+            "a mesma que abre o porão."
         ),
         "options": [
             ("Voltar à sala", "voltar_sala"),
         ],
     },
     "bilhete_pais": {
-        "title": "O apelido",
+        "title": "O que a mãe sabia",
         "image": "/assets/imagens/quarto_pais.jpg",
         "text": (
-            "No verso do bilhete, a letra da sua mãe:\n"
-            "\"Casinha. Sempre foi Casinha.\"\n\n"
-            "Você lembra do jardim. Da pedra. Do medo que pedia nomes."
+            "No verso: \"O apelido é Casinha. Sempre foi.\"\n\n"
+            "Sua mãe percebeu o eco. Tentou ensinar o nome certo. "
+            "Você foi embora antes de aprender.\n\n"
+            "Agora você sabe: o ritual precisa de vela, fósforo, fita e o nome Casinha."
         ),
         "options": [
-            ("Abrir o envelope (enigma)", "enigma"),
+            ("Abrir o envelope do ritual", "enigma"),
             ("Voltar à sala", "voltar_sala"),
         ],
     },
     "enigma": {
-        "title": "O enigma",
+        "title": "A ordem do ritual",
         "image": "/assets/imagens/enigma.jpg",
         "text": (
-            "No papel: três linhas.\n\n"
-            "1) O que acende sem ser luz.\n"
-            "2) O que guarda a memória sem ser cabeça.\n"
-            "3) O apelido da casa.\n\n"
-            "Você precisa escolher a ordem certa — ou improvisar."
+            "Três passos, nesta ordem:\n\n"
+            "1) O que faz fogo (cozinha).\n"
+            "2) O que guarda a voz da criança (sótão).\n"
+            "3) O apelido da casa (jardim / bilhete da mãe).\n\n"
+            "Escolha a sequência certa. Errar dói."
         ),
         "options": [
-            ("Fósforos → fita → Casinha", "enigma_certo"),
+            ("Fogo → fita → Casinha", "enigma_certo"),
             ("Chave → foto → eco", "enigma_errado"),
             ("Vela → pedra → quinze", "enigma_errado"),
-            ("Desistir por agora", "voltar_sala"),
+            ("Deixar para depois", "voltar_sala"),
+        ],
+    },
+    "enigma_cego": {
+        "title": "Ainda falta lembrar",
+        "image": "/assets/imagens/enigma.jpg",
+        "text": (
+            "O papel não faz sentido ainda.\n\n"
+            "Você precisa achar o apelido (jardim ou bilhete da mãe) "
+            "ou ouvir a fita do sótão. Sem isso, o enigma é só risco."
+        ),
+        "options": [
+            ("Voltar à sala", "voltar_sala"),
+            ("Ir ao corredor", "corredor"),
         ],
     },
     "enigma_ok": {
-        "title": "A casa reconhece",
+        "title": "A ordem certa",
         "image": "/assets/imagens/enigma.jpg",
         "text": (
-            "O envelope aquece e solta um cheiro de cera.\n\n"
-            "Você acertou a ordem. A casa suspira — um assoalho rangendo longe.\n"
-            "O ritual, se um dia for preciso, agora tem caminho."
+            "Fogo. Memória. Nome.\n\n"
+            "A casa reconhece a ordem. Se você chegar ao espelho com vela, "
+            "fósforos e fita, poderá libertar o menino em vez de destruí-lo."
         ),
         "options": [
             ("Voltar à sala", "voltar_sala"),
@@ -771,9 +794,8 @@ SCENES = {
         "title": "Ordem errada",
         "image": "/assets/imagens/enigma.jpg",
         "text": (
-            "O papel queima nas bordas sem chama.\n\n"
-            "Uma dor seca sobe pelo braço. A casa não gosta de mentiras.\n\n"
-            "Você perdeu uma vida."
+            "A casa não aceita a sequência. Uma dor sobe pelo braço.\n\n"
+            "Você perdeu uma vida. Pode tentar de novo, ou ir atrás das pistas."
         ),
         "options": [
             ("Tentar de novo", "enigma"),
@@ -781,12 +803,12 @@ SCENES = {
         ],
     },
     "item_chave": {
-        "title": "Chave enferrujada",
+        "title": "Chave do porão",
         "image": "/assets/imagens/sala.jpg",
         "text": (
-            "A gaveta range. Dentro: uma chave enferrujada, quente ao toque.\n\n"
-            "Na alça, um pedaço de fita isolante com a palavra PORÃO.\n\n"
-            "Você guarda a chave. Ela esfria na sua mão aos poucos."
+            "Na alça: PORÃO. Também abre o quarto dos pais.\n\n"
+            "Sem essa chave você não chega ao espelho — "
+            "e na fuga ela destranca a porta da frente."
         ),
         "options": [
             ("Continuar na sala", "voltar_sala"),
@@ -794,54 +816,51 @@ SCENES = {
         ],
     },
     "tv_estatica": {
-        "title": "Estática",
+        "title": "A TV",
         "image": "/assets/imagens/tv_estatica.jpg",
         "sfx": "tv",
         "text": (
-            "Você liga a TV. Só estática.\n\n"
-            "No chiado, quase dá para ouvir alguém contar: "
-            "um… dois… três…\n\n"
-            "Você desliga antes de chegar a quinze."
+            "Estática. No chiado, alguém conta: um… dois… três…\n\n"
+            "Um rosto de criança — o seu — aparece e some.\n\n"
+            "Ainda falta a fita do sótão para entender o que ele quer dizer."
         ),
         "options": [
             ("Continuar na sala", "voltar_sala"),
         ],
     },
     "tv_aviso": {
-        "title": "Você deixou alguém",
+        "title": "O recado da TV",
         "image": "/assets/imagens/tv_estatica.jpg",
         "sfx": "tv",
         "text": (
-            "Você se aproxima da tela. O rosto de criança abre a boca.\n\n"
-            "Não sai som — sai um sopro frio. A estática sussurra:\n"
-            "\"Você deixou alguém no seu lugar.\"\n\n"
-            "Agora você sabe: precisa ver o espelho de verdade."
+            "Com a fita ainda na cabeça, a estática fica clara:\n"
+            "\"Você deixou alguém no seu lugar. Ele está no porão.\"\n\n"
+            "É o eco. Caminho: chave, fósforos, descer."
         ),
         "options": [
             ("Continuar na sala", "voltar_sala"),
-            ("Ir ao espelho", "ir_espelho"),
+            ("Ir ao espelho do porão", "ir_espelho"),
         ],
     },
     "sotao_escuro": {
         "title": "Sótão sem luz",
         "image": "/assets/imagens/sotao.jpg",
         "text": (
-            "Está escuro demais. Suas mãos encontram arestas, teias, "
-            "algo macio que pode ser um casaco… ou não.\n\n"
-            "Sem fósforos, o sótão guarda seus segredos."
+            "Escuro demais. A fita e a vela estão aqui, mas sem fósforos "
+            "você não vê o chão.\n\n"
+            "Volte à cozinha, pegue os fósforos, suba de novo."
         ),
         "options": [
             ("Insistir no escuro", "sotao_queda"),
-            ("Descer ao corredor", "corredor"),
+            ("Descer buscar fósforos", "corredor"),
         ],
     },
     "sotao_queda": {
         "title": "Queda no escuro",
         "image": "/assets/imagens/sotao.jpg",
         "text": (
-            "Você avança. O pé encontra o vazio entre duas tábuas.\n\n"
-            "Você cai de joelho. Algo — uma unha? um fio? — raspa seu tornozelo.\n\n"
-            "Você perdeu uma vida."
+            "O pé encontra o vazio entre as tábuas. Você cai. Algo raspa o tornozelo.\n\n"
+            "Você perdeu uma vida. Ainda precisa dos fósforos."
         ),
         "options": [
             ("Descer ao corredor", "corredor"),
@@ -851,41 +870,43 @@ SCENES = {
         "title": "O sótão",
         "image": "/assets/imagens/sotao.jpg",
         "text": (
-            "Você risca um fósforo. A chama treme e revela o sótão em pedaços laranja:\n"
-            "caixas, um gravador de fita cassete, uma vela branca sem usar."
+            "O fósforo acende. Há um gravador e uma vela branca.\n\n"
+            "A fita é a sua voz de criança prometendo deixar alguém no lugar.\n"
+            "A vela é o que a mãe queria que você usasse para libertar o eco."
         ),
         "options": [
-            ("Examinar o gravador / a fita", "ouvir_fita"),
-            ("Pegar a vela", "pegar_vela"),
+            ("Ouvir a fita (prova)", "ouvir_fita"),
+            ("Pegar a vela (ritual)", "pegar_vela"),
             ("Descer ao corredor", "corredor"),
         ],
     },
     "sotao_pista": {
-        "title": "O sótão — eco da fita",
+        "title": "O sótão — a prova",
         "image": "/assets/imagens/sotao.jpg",
         "text": (
-            "A voz da criança na fita ainda parece ecoar pelas vigas.\n\n"
-            "Você pode descer seguindo o eco — até o espelho — "
-            "ou continuar vasculhando."
+            "Você já ouviu a fita. Sabe o que prometeu.\n\n"
+            "Pode descer ao espelho, pegar a vela se ainda não pegou, "
+            "ou continuar procurando a foto no porão."
         ),
         "options": [
             ("Ouvir a fita de novo", "ouvir_fita"),
             ("Pegar a vela", "pegar_vela"),
-            ("Seguir o eco (espelho)", "ir_espelho"),
+            ("Ir ao espelho", "ir_espelho"),
             ("Descer ao corredor", "corredor"),
         ],
     },
     "fita_memoria": {
-        "title": "EU / OUTRO",
+        "title": "A promessa",
         "image": "/assets/imagens/fita.jpg",
         "video": "/assets/videos/fita_memoria.mp4",
         "video_autoplay": False,
         "text": (
-            "Você aperta play. Chiado. Então uma voz de criança — a sua — sussurra:\n\n"
-            "\"Quando eu crescer, vou deixar alguém no meu lugar.\"\n\n"
-            "Pausa. Respiração. Depois, mais baixo:\n"
-            "\"Pra casa não ficar sozinha.\"\n\n"
-            "A fita termina. O gravador continua quente."
+            "Sua voz de criança:\n"
+            "\"Quando eu crescer, vou deixar alguém no meu lugar. "
+            "Pra casa não ficar sozinha.\"\n\n"
+            "Foi isso. Você prometeu. O eco nasceu dessa frase.\n\n"
+            "Com a fita, no espelho você pode dizer a verdade. "
+            "Para o ritual, ainda precisa da vela, dos fósforos e do nome Casinha."
         ),
         "options": [
             ("Continuar no sótão", "voltar_sotao"),
@@ -896,8 +917,9 @@ SCENES = {
         "title": "A vela",
         "image": "/assets/imagens/sotao.jpg",
         "text": (
-            "Você guarda a vela. A cera está fria, mas o pavio cheira a fumaça recente — "
-            "como se alguém tivesse apagado agora."
+            "A vela cheira a fumaça recente. Alguém — o eco, ou a memória da mãe — "
+            "já tentou o ritual.\n\n"
+            "Com fósforos, fita e o apelido Casinha, ela liberta. Sem isso, não acenda no espelho."
         ),
         "options": [
             ("Continuar no sótão", "voltar_sotao"),
@@ -909,13 +931,12 @@ SCENES = {
         "image": "/assets/imagens/porta_falha.jpg",
         "sfx": "porta",
         "text": (
-            "A porta do porão está trancada. "
-            "A fechadura é antiga, coberta de ferrugem em forma de unha.\n\n"
-            "Sem a chave, só resta forçar… ou desistir."
+            "A porta do porão pede a chave da sala.\n\n"
+            "Forçar é perigoso: o eco empurra do outro lado."
         ),
         "options": [
             ("Forçar a porta", "forcar_porao"),
-            ("Desistir e voltar", "corredor"),
+            ("Voltar buscar a chave", "corredor"),
         ],
     },
     "porta_falha": {
@@ -923,10 +944,8 @@ SCENES = {
         "image": "/assets/imagens/porta_falha.jpg",
         "sfx": "porta",
         "text": (
-            "Você empurra com o ombro. A madeira geme, mas não cede.\n\n"
-            "Algo do outro lado empurra de volta — no mesmo ritmo.\n"
-            "Uma lasca corta sua palma.\n\n"
-            "Você perdeu uma vida."
+            "Você empurra. Algo empurra de volta no mesmo ritmo. Uma lasca corta a palma.\n\n"
+            "Você perdeu uma vida. Pegue a chave na sala."
         ),
         "options": [
             ("Voltar ao corredor", "corredor"),
@@ -936,11 +955,9 @@ SCENES = {
         "title": "Porão sem luz",
         "image": "/assets/imagens/porao.jpg",
         "text": (
-            "Sem luz, o chão some. Você tropeça numa caixa. "
-            "O joelho bate no concreto.\n\n"
-            "Você perdeu uma vida.\n\n"
-            "Dedos encontram um pano grosso sobre algo liso — vidro. "
-            "Sem luz, você não ousa puxar o pano."
+            "Sem fósforos o chão some. Você tropeça. O joelho bate no concreto.\n\n"
+            "Você perdeu uma vida. Há um pano sobre um espelho, mas você não ousa puxar no escuro.\n\n"
+            "Suba, pegue fósforos na cozinha, desça de novo."
         ),
         "options": [
             ("Subir ao corredor", "corredor"),
@@ -950,14 +967,13 @@ SCENES = {
         "title": "O porão",
         "image": "/assets/imagens/porao.jpg",
         "text": (
-            "Você risca um fósforo. A chama mostra a inscrição nas paredes:\n"
-            "o seu nome, repetido, e abaixo: \"ELE FICOU.\"\n\n"
-            "No chão, uma foto rasgada.\n"
-            "No fundo, uma porta baixa coberta por um pano escuro — "
-            "o formato de um espelho de corpo inteiro."
+            "Nas paredes: o seu nome, e abaixo: ELE FICOU.\n\n"
+            "No chão, uma foto rasgada — você criança, e atrás uma sombra com o mesmo sorriso.\n\n"
+            "No fundo, o espelho coberto. É aqui que o eco espera. "
+            "Se chegar sem fita nem foto, ele te puxa."
         ),
         "options": [
-            ("Pegar a foto rasgada", "pegar_foto"),
+            ("Pegar a foto (prova)", "pegar_foto"),
             ("Puxar o pano do espelho", "ir_espelho"),
             ("Subir ao corredor", "corredor"),
         ],
@@ -966,26 +982,24 @@ SCENES = {
         "title": "A foto rasgada",
         "image": "/assets/imagens/porao.jpg",
         "text": (
-            "A foto mostra a casa intacta, ensolarada.\n\n"
-            "No jardim, uma criança — você — sorri. "
-            "Atrás dela, uma sombra com o mesmo sorriso, atrasada um passo.\n\n"
-            "A borda da foto está queimada."
+            "Você no jardim, sorrindo. Atrás, o eco — mesmo sorriso, um passo atrasado.\n\n"
+            "Junto com a fita, esta foto prova que você deixou alguém. "
+            "No espelho, isso vira a verdade: ele não é você, é o que ficou."
         ),
         "options": [
-            ("Continuar no porão", "porao"),
             ("Puxar o pano do espelho", "ir_espelho"),
             ("Subir ao corredor", "corredor"),
         ],
     },
     "dialogo_eco": {
-        "title": "Diálogo com o eco",
+        "title": "O eco fala",
         "image": "/assets/imagens/dialogo_eco.jpg",
         "audio": "/assets/audios/trilha_espelho.mp3",
         "text": (
-            "Antes do confronto, o vidro embacia.\n\n"
-            "O eco inclina a cabeça — o seu gesto, atrasado — e pergunta:\n"
+            "Do outro lado do vidro, o seu rosto atrasado pergunta:\n"
             "\"Você veio me buscar… ou veio se despedir?\"\n\n"
-            "A resposta muda o peso do que vem depois."
+            "Ele é a criança que você abandonou na promessa. "
+            "A resposta não fecha o jogo — só muda o peso do confronto."
         ),
         "options": [
             ("\"Vim me lembrar de quem eu sou\"", "eco_lembrar"),
@@ -995,75 +1009,81 @@ SCENES = {
         ],
     },
     "espelho": {
-        "title": "O espelho",
+        "title": "O confronto",
         "image": "/assets/imagens/espelho.jpg",
         "audio": "/assets/audios/trilha_espelho.mp3",
         "text": (
-            "O doppelgänger está do outro lado do vidro, sorrindo com o seu sorriso.\n\n"
-            "Ele fala primeiro — com a sua voz, meio segundo atrasada:\n"
+            "O eco sorri com o seu sorriso.\n"
             "\"Eu esperei doze anos. A casa estava com saudade.\"\n\n"
-            "O ar cheira a chuva de infância e a ferrugem."
+            "Quatro saídas, cada uma com regra:\n"
+            "• Fuga — precisa de chave ou fósforos.\n"
+            "• Verdade — precisa da fita e da foto.\n"
+            "• Trocar de lugar — você fica, ele sai.\n"
+            "• Ritual — vela, fósforos, fita e o nome Casinha."
         ),
         "options": [
-            ("Correr para a porta da frente", "escolher_fuga"),
-            ("Confrontar: \"Você não é eu\"", "escolher_verdade"),
-            ("Aceitar trocar de lugar", "fim_eco"),
-            ("Acender a vela (ritual)", "escolher_ritual"),
+            ("Fugir pela porta da frente", "escolher_fuga"),
+            ("Dizer a verdade (fita + foto)", "escolher_verdade"),
+            ("Trocar de lugar com o eco", "fim_eco"),
+            ("Fazer o ritual (vela + nome)", "escolher_ritual"),
         ],
     },
     "espelho_sem_pista": {
-        "title": "Sem lembrar",
+        "title": "Sem prova",
         "image": "/assets/imagens/espelho.jpg",
         "audio": "/assets/audios/trilha_espelho.mp3",
         "text": (
-            "O espelho te engole com a própria imagem.\n\n"
-            "Sem lembrar por que veio, você só vê o sorriso atrasado. "
-            "Mãos iguais às suas atravessam o vidro e puxam."
+            "Você puxa o pano sem saber quem é ele.\n\n"
+            "Sem a fita nem a foto, o eco não é um menino — é só o seu rosto. "
+            "Mãos iguais às suas atravessam o vidro e puxam.\n\n"
+            "A casa fica com os dois do mesmo lado. Você deixa de ser o original."
         ),
         "options": [],
     },
     "fuga_falha": {
-        "title": "A porta não cede",
+        "title": "A porta não abre",
         "image": "/assets/imagens/corredor.jpg",
         "text": (
-            "Você corre. Sem chave, sem luz.\n\n"
-            "A porta da frente está trancada por dentro. "
-            "Atrasado, o eco chega e põe a mão no seu ombro — a mesma mão."
+            "Você corre sem chave e sem luz. A porta da frente está trancada por dentro.\n\n"
+            "O eco chega atrasado e põe a mão no seu ombro — a mesma mão.\n\n"
+            "Sem ferramenta para sair, a fuga vira troca. Ele sai. Você fica."
         ),
         "options": [],
     },
     "verdade_falha": {
-        "title": "A frase sem peso",
+        "title": "A frase sem prova",
         "image": "/assets/imagens/espelho.jpg",
         "text": (
             "Você grita: \"Você não é eu!\"\n\n"
-            "O eco ri com a sua garganta. Sem a fita e a foto, a frase não tem peso.\n"
-            "O vidro não quebra. Você quebra."
+            "Sem a fita e a foto, a frase não tem peso. O eco ri com a sua garganta. "
+            "O vidro não quebra. Você quebra.\n\n"
+            "Volte outra vez: sótão (fita) e porão (foto)."
         ),
         "options": [],
     },
     "ritual_falha": {
-        "title": "Falta algo",
+        "title": "O ritual incompleto",
         "image": "/assets/imagens/espelho.jpg",
         "text": (
-            "Você tenta o ritual, mas falta a vela, os fósforos ou a memória da fita.\n\n"
-            "O eco sorri. A casa não perdoa improvisos."
+            "Falta peça: vela, fósforos, fita ou o apelido Casinha "
+            "(jardim ou bilhete da mãe).\n\n"
+            "O eco sorri. A casa não perdoa improvisos. Escolha outro caminho, "
+            "ou volte a procurar o que falta."
         ),
         "options": [
             ("Enfrentar de outro modo", "espelho"),
         ],
     },
     "fim_fuga": {
-        "title": "FINAL — FUGA AMBÍGUA",
+        "title": "FINAL — FUGA",
         "image": "/assets/imagens/fim_fuga.jpg",
         "audio": "/assets/audios/trilha_casa.mp3",
         "text": (
-            "Você corre. A porta da frente cede. A noite lá fora é real.\n\n"
-            "Você olha para trás. A casa está quieta. Então, no seu antigo quarto, "
-            "a luz acende sozinha.\n\n"
-            "Alguém passa atrás da cortina com o seu jeito de andar. "
-            "Meio segundo atrasado.\n\n"
-            "Você escapou. Talvez."
+            "A chave (ou a chama) abre a porta. A rua é real. Você corre.\n\n"
+            "Na janela do seu quarto, a luz acende. Alguém com o seu jeito de andar "
+            "passa atrás da cortina — meio segundo atrasado.\n\n"
+            "Você saiu. O eco ficou. A casa não está sozinha. "
+            "Você também não está inteiro."
         ),
         "options": [],
     },
@@ -1072,66 +1092,62 @@ SCENES = {
         "image": "/assets/imagens/fim_verdade.jpg",
         "audio": "/assets/audios/trilha_amanhecer.mp3",
         "text": (
-            "Você segura a foto e a memória da fita.\n"
-            "\"Você não é eu. Você é o que eu deixei.\"\n\n"
-            "O sorriso do eco trinca. Você golpeia o espelho. "
-            "O vidro soluça e estilhaça.\n\n"
-            "Quando amanhece, você está no jardim. "
-            "Não há passos atrasados. Só o seu coração, no tempo certo."
+            "Você mostra a foto e a fita.\n"
+            "\"Você não é eu. Você é o que eu deixei quando fui embora.\"\n\n"
+            "O eco trinca. O espelho estilhaça. A promessa, dita em voz alta, se desfaz.\n\n"
+            "De manhã, no jardim, só o seu coração no tempo certo. "
+            "A casa está vazia de verdade — e isso, desta vez, está certo."
         ),
         "options": [],
     },
     "fim_eco": {
-        "title": "FINAL — O ECO SAI",
+        "title": "FINAL — A TROCA",
         "image": "/assets/imagens/fim_eco.jpg",
         "stop_audio": True,
         "text": (
             "Você encosta a mão no vidro. O eco encosta a dele.\n\n"
-            "O frio passa. O calor fica do outro lado. Não há recuo.\n\n"
-            "Do lado de fora, alguém com o seu rosto abre a porta da frente "
-            "e sorri no tempo certo.\n\n"
-            "A casa não está mais sozinha. Você está."
+            "O calor passa para o lado de lá. Você fica no porão, atrasado.\n\n"
+            "Do lado de fora, alguém com o seu rosto abre a porta e sorri no tempo certo.\n\n"
+            "A casa ganhou o morador que pediu. O mundo ganhou uma cópia. "
+            "Você cumpriu a promessa — do lado errado."
         ),
         "options": [],
     },
     "fim_ritual": {
-        "title": "FINAL SECRETO — RITUAL",
+        "title": "FINAL — LIBERTAÇÃO",
         "image": "/assets/imagens/fim_ritual.jpg",
         "audio": "/assets/audios/trilha_amanhecer.mp3",
         "text": (
-            "Você risca o fósforo. A vela acende.\n\n"
-            "A chama mostra o eco como ele é: pequeno, assustado, "
-            "uma criança que prometeu não deixar a casa vazia.\n\n"
-            "Você diz o apelido da casa — Casinha.\n"
-            "O eco encolhe. Vira menino de novo. Você apaga a vela com os dedos.\n\n"
-            "No quintal, queima a fita. A casa, pela primeira vez em doze anos, "
-            "não responde."
+            "Fósforo. Vela. Fita. Você diz: Casinha.\n\n"
+            "A chama mostra o eco como ele é: um menino assustado "
+            "que só queria que a casa não ficasse sozinha.\n\n"
+            "Você apaga a vela com os dedos. Ele encolhe e some — "
+            "não destruído, despedido.\n\n"
+            "No quintal, a fita queima. A casa, pela primeira vez em doze anos, "
+            "não responde. Você pode ir embora sem deixar ninguém."
         ),
         "options": [],
     },
     "fim_ruim": {
-        "title": "FINAL — MORTE",
+        "title": "FINAL — A CASA FICA COM VOCÊ",
         "image": "/assets/imagens/fim_morte.jpg",
         "stop_audio": True,
         "text": (
-            "A escuridão fecha como uma boca.\n\n"
-            "Os passos atrasados — clic… clic — param.\n"
-            "Não porque foram embora.\n"
-            "Porque agora estão sincronizados com os seus.\n\n"
-            "A casa lembra. E você, enfim, também."
+            "A escuridão fecha. Os passos atrasados sincronizam com os seus.\n\n"
+            "Não há mais original nem cópia. Só um morador no ritmo da casa.\n\n"
+            "Você lembrou tarde demais."
         ),
         "options": [],
     },
     "fim_atrasado": {
-        "title": "FINAL — A CASA ESCOLHE",
+        "title": "FINAL — QUINZE",
         "image": "/assets/imagens/fim_atrasado.jpg",
         "stop_audio": True,
         "text": (
-            "Quinze.\n\n"
-            "O bilhete não mentia. A contagem termina e a casa decide por você.\n\n"
-            "Os passos atrasados alcançam o seu ritmo. "
-            "O corredor encolhe. O espelho já não precisa de você do lado de cá.\n\n"
-            "Alguém com o seu rosto apaga a luz."
+            "Quinze. A contagem acaba.\n\n"
+            "Você demorou demais para juntar as provas e chegar ao espelho. "
+            "A casa escolhe o eco: ele assume o seu passo.\n\n"
+            "Alguém com o seu rosto apaga a luz. Você fica atrasado para sempre."
         ),
         "options": [],
     },
@@ -1145,6 +1161,14 @@ SCENES = {
 def executar_acao(acao):
     """Aplica a regra da ação escolhida. Não conta turno (isso é no bridge JS)."""
     flags = state["flags"]
+
+    def conhece_casinha():
+        return (
+            flags["achou_pedra"]
+            or flags["leu_pais"]
+            or flags["resolveu_enigma"]
+            or possui_item("pedra do jardim")
+        )
 
     if acao == "ir_corredor":
         ganhar_pontos(1)
@@ -1229,6 +1253,9 @@ def executar_acao(acao):
     if acao == "enigma":
         if flags["resolveu_enigma"]:
             mostrar_cena("enigma_ok")
+            return
+        if not (flags["leu_pais"] or flags["achou_pedra"] or flags["ouviu_fita"]):
+            mostrar_cena("enigma_cego")
             return
         mostrar_cena("enigma")
         return
@@ -1334,7 +1361,7 @@ def executar_acao(acao):
         )
         ganhar_pontos(5)
         if not tem_pista:
-            _finalizar("fim_ruim")
+            _finalizar("espelho_sem_pista")
             return
         flags["conheceu_eco"] = True
         if not flags["falou_eco"]:
@@ -1375,7 +1402,7 @@ def executar_acao(acao):
         if possui_item("chave enferrujada") or possui_item("fósforos"):
             _finalizar("fim_fuga", 20)
         else:
-            _finalizar("fim_ruim")
+            _finalizar("fuga_falha")
         return
 
     if acao == "escolher_verdade":
@@ -1387,7 +1414,7 @@ def executar_acao(acao):
                 bonus += 10
             _finalizar("fim_verdade", bonus)
         else:
-            _finalizar("fim_ruim")
+            _finalizar("verdade_falha")
         return
 
     if acao == "escolher_ritual":
@@ -1395,8 +1422,8 @@ def executar_acao(acao):
             possui_item("vela")
             and possui_item("fósforos")
             and (flags["ouviu_fita"] or possui_item("fita cassete"))
+            and conhece_casinha()
         )
-        # Enigma ou pedra ajudam, mas ritual clássico ainda funciona sem eles
         if base_ok:
             bonus = 60
             if flags["resolveu_enigma"]:

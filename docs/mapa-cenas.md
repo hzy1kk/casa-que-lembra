@@ -1,55 +1,41 @@
 # Mapa de cenas — A Casa que Lembra
 
-## Hub e exploração
+## Premissa
 
-| Cena | Onde leva |
-|------|-----------|
-| `inicio` | Quarto — bilhete ou corredor |
-| `corredor` | Cozinha, sala, escadas, **mais caminhos** |
-| `corredor_mais` | Jardim ou chamar o eco |
-| `escadas` | Sótão ou porão |
-| `cozinha` | Fósforos |
-| `sala` | Chave, TV, quarto dos pais |
-| `sotao` | Fita cassete, vela |
-| `porao` | Foto rasgada, espelho (precisa chave + fósforos) |
-| `jardim` | Pedra do jardim (apelido **Casinha**) |
-| `quarto_pais` | Bilhete dos pais + enigma (precisa chave) |
-| `enigma` | Flag do ritual / bônus de pontos |
-| `dialogo_eco` | Antes do confronto no espelho |
-| `espelho` | Escolha do final |
+Aos 8 anos você prometeu à casa que não a deixaria sozinha. Aos 18, foi embora.
+A casa ficou com um **eco**: uma cópia sua, meio segundo atrasada.
 
-## Itens
+Doze anos depois você acorda no quarto de infância. A casa **conta até 15**.
+Objetivo: juntar provas, chegar ao **espelho do porão** e escolher o final.
 
-| Item | Onde | Para quê |
-|------|------|----------|
-| fósforos | Cozinha | Luz no sótão/porão; ajuda na fuga |
-| chave enferrujada | Sala | Abre porão e quarto dos pais |
-| fita cassete | Sótão | Final Verdade / Ritual |
-| vela | Sótão | Ritual secreto |
-| foto rasgada | Porão | Final Verdade |
-| pedra do jardim | Jardim | Bônus no enigma / ritual |
+## O que cada cômodo faz
 
-## Finais
+| Cena | Função |
+|------|--------|
+| Quarto | Premissa + bilhete (contagem até 15) |
+| Corredor | Hub |
+| Cozinha | **Fósforos** (luz / fogo do ritual / fuga) |
+| Sala | **Chave** do porão e do quarto dos pais; TV |
+| Quarto dos pais | Apelido **Casinha** + ordem do ritual |
+| Jardim | Pedra com o apelido **Casinha** |
+| Sótão | **Fita** (promessa) e **vela** |
+| Porão | **Foto** (prova) e o **espelho** |
 
-| Final | Como chegar |
-|-------|-------------|
-| **Fuga** | No espelho, correr com chave ou fósforos |
-| **Verdade** | Confrontar com fita + foto |
-| **O Eco sai** | Aceitar trocar de lugar |
-| **Ritual (secreto)** | Vela + fósforos + fita (enigma/pedra dão bônus) |
-| **Morte** | Vida 0, espelho sem pistas, fuga/verdade falhas |
-| **Atrasado** | 15 turnos sem fechar um final |
+## Finais (cada um tem regra)
 
-## Enigma (ordem certa)
+| Final | Precisa | O que acontece |
+|-------|---------|----------------|
+| **Fuga** | Chave ou fósforos | Você sai; o eco fica na casa |
+| **Verdade** | Fita + foto | Você nomeia o eco; o espelho quebra |
+| **Troca** | Só escolher | Você fica; o eco sai no seu lugar |
+| **Libertação (ritual)** | Vela + fósforos + fita + nome Casinha | O menino é despedido, não destruído |
+| **Sem prova** | Espelho sem fita nem foto | O eco te puxa |
+| **Fuga falhou** | Correr sem chave e sem fósforos | A porta não abre |
+| **Verdade sem prova** | Confrontar sem fita+foto | A frase não vale |
+| **Quinze** | 15 turnos sem fechar | A casa escolhe o eco |
 
-1. Fósforos (o que acende)  
-2. Fita (memória)  
-3. Casinha (apelido)
+## Enigma (ordem)
 
-## Regras rápidas
+Fogo (fósforos) → fita → Casinha.
 
-- Cada escolha gasta **1 turno** (máx. 15 explorando).
-- Se chegar a 15 ainda andando pela casa (sem rota ao espelho) → `fim_atrasado`.
-- Se a cena ainda oferece o espelho/confronto, dá para fechar o final.
-- Consequências ruins usam cenas próprias (`porta_falha`, `eco_responde`, `enigma_falha`, etc.).
-- Save e ranking ficam no navegador (`localStorage`).
+Só abre de verdade depois de achar uma pista (jardim, mãe ou fita).
