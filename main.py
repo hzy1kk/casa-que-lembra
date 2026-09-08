@@ -484,6 +484,8 @@ SCENES = {
     "bilhete": {
         "title": "O verso",
         "image": "/assets/imagens/inicio.jpg",
+        "video": "/assets/videos/cena_inicio.mp4",
+        "video_autoplay": True,
         "text": (
             "No verso, a letra treme:\n"
             "\"Cada erro te aproxima dele. Se a casa te cansar, o que ficou no seu lugar vira você.\"\n\n"
@@ -535,6 +537,8 @@ SCENES = {
     "escadas": {
         "title": "As escadas",
         "image": "/assets/imagens/corredor.jpg",
+        "video": "/assets/videos/cena_corredor.mp4",
+        "video_autoplay": True,
         "sfx": "passos",
         "text": (
             "Para cima: o sótão. Lá está a fita que você gravou criança — "
@@ -551,6 +555,8 @@ SCENES = {
     "eco_responde": {
         "title": "O eco responde",
         "image": "/assets/imagens/eco_responde.jpg",
+        "video": "/assets/videos/cena_eco_responde.mp4",
+        "video_autoplay": True,
         "text": (
             "Você grita: \"Tem alguém aí?\"\n\n"
             "Do fundo do corredor a sua voz volta, um pouco mais alegre:\n"
@@ -565,6 +571,8 @@ SCENES = {
     "jardim": {
         "title": "O jardim",
         "image": "/assets/imagens/jardim.jpg",
+        "video": "/assets/videos/cena_jardim.mp4",
+        "video_autoplay": True,
         "sfx": "passos",
         "text": (
             "O quintal está morto, mas a terra ainda cheira a chuva.\n\n"
@@ -581,6 +589,8 @@ SCENES = {
     "item_pedra": {
         "title": "O apelido",
         "image": "/assets/imagens/jardim.jpg",
+        "video": "/assets/videos/cena_jardim.mp4",
+        "video_autoplay": True,
         "text": (
             "Você guarda a pedra. CASINHA.\n\n"
             "A casa parece ter ouvido. O vento no quintal para um segundo.\n\n"
@@ -593,6 +603,8 @@ SCENES = {
     "cozinha": {
         "title": "A cozinha",
         "image": "/assets/imagens/cozinha.jpg",
+        "video": "/assets/videos/cena_cozinha.mp4",
+        "video_autoplay": True,
         "text": (
             "Na parede, riscos: dias, anos — o eco marcou o tempo sozinho.\n\n"
             "Na pia, um prato ainda quente. Ninguém mora aqui. "
@@ -609,6 +621,8 @@ SCENES = {
     "cozinha_vazia": {
         "title": "A cozinha",
         "image": "/assets/imagens/cozinha.jpg",
+        "video": "/assets/videos/cena_cozinha.mp4",
+        "video_autoplay": True,
         "text": (
             "Você já pegou os fósforos. O vapor da comida ainda sobe.\n\n"
             "Na parede, o risco do número avança sozinho."
@@ -620,6 +634,8 @@ SCENES = {
     "comida_quente": {
         "title": "A segunda mão",
         "image": "/assets/imagens/cozinha.jpg",
+        "video": "/assets/videos/cena_cozinha.mp4",
+        "video_autoplay": True,
         "text": (
             "O arroz queima o dedo. Do outro lado do vapor, "
             "uma mão igual à sua — mais nova — faz o mesmo gesto.\n\n"
@@ -634,6 +650,8 @@ SCENES = {
     "item_fosforos": {
         "title": "Fósforos",
         "image": "/assets/imagens/cozinha.jpg",
+        "video": "/assets/videos/cena_cozinha.mp4",
+        "video_autoplay": True,
         "text": (
             "Três palitos. Luz para o sótão e o porão. "
             "Também servem para acender a vela no ritual, ou para ver a porta da frente na fuga."
@@ -645,6 +663,8 @@ SCENES = {
     "sala": {
         "title": "A sala",
         "image": "/assets/imagens/sala.jpg",
+        "video": "/assets/videos/cena_sala.mp4",
+        "video_autoplay": True,
         "text": (
             "Sofá coberto. Relógios parados. A TV de tubo está morta.\n\n"
             "Na estante, a gaveta da chave do porão.\n"
@@ -661,6 +681,8 @@ SCENES = {
     "sala_pista": {
         "title": "A sala — o recado",
         "image": "/assets/imagens/tv_estatica.jpg",
+        "video": "/assets/videos/cena_tv.mp4",
+        "video_autoplay": True,
         "text": (
             "A TV liga sozinha. No meio da estática, o seu rosto de criança.\n\n"
             "Ele aponta para baixo — para o porão, para o espelho.\n\n"
@@ -676,6 +698,8 @@ SCENES = {
     "quarto_pais": {
         "title": "Quarto dos pais",
         "image": "/assets/imagens/quarto_pais.jpg",
+        "video": "/assets/videos/cena_quarto_pais.mp4",
+        "video_autoplay": True,
         "sfx": "porta",
         "text": (
             "A chave abre. Cheiro de perfume velho.\n\n"
@@ -692,6 +716,8 @@ SCENES = {
     "quarto_pais_trancado": {
         "title": "Porta trancada",
         "image": "/assets/imagens/quarto_pais.jpg",
+        "video": "/assets/videos/cena_quarto_pais.mp4",
+        "video_autoplay": True,
         "sfx": "porta",
         "text": (
             "O quarto dos pais não abre sem a chave da sala — "
@@ -704,6 +730,8 @@ SCENES = {
     "bilhete_pais": {
         "title": "O que a mãe sabia",
         "image": "/assets/imagens/quarto_pais.jpg",
+        "video": "/assets/videos/cena_quarto_pais.mp4",
+        "video_autoplay": True,
         "text": (
             "No verso: \"O apelido é Casinha. Sempre foi.\"\n\n"
             "Sua mãe percebeu o eco. Tentou ensinar o nome certo. "
@@ -718,6 +746,8 @@ SCENES = {
     "enigma": {
         "title": "A ordem do ritual",
         "image": "/assets/imagens/enigma.jpg",
+        "video": "/assets/videos/cena_enigma.mp4",
+        "video_autoplay": True,
         "text": (
             "Três passos, nesta ordem:\n\n"
             "1) O que faz fogo (cozinha).\n"
@@ -735,6 +765,8 @@ SCENES = {
     "enigma_cego": {
         "title": "Ainda falta lembrar",
         "image": "/assets/imagens/enigma.jpg",
+        "video": "/assets/videos/cena_enigma.mp4",
+        "video_autoplay": True,
         "text": (
             "O papel não faz sentido ainda.\n\n"
             "Você precisa achar o apelido (jardim ou bilhete da mãe) "
@@ -748,6 +780,8 @@ SCENES = {
     "enigma_ok": {
         "title": "A ordem certa",
         "image": "/assets/imagens/enigma.jpg",
+        "video": "/assets/videos/cena_enigma.mp4",
+        "video_autoplay": True,
         "text": (
             "Fogo. Memória. Nome.\n\n"
             "A casa reconhece a ordem. Se você chegar ao espelho com vela, "
@@ -761,6 +795,8 @@ SCENES = {
     "enigma_falha": {
         "title": "Ordem errada",
         "image": "/assets/imagens/enigma.jpg",
+        "video": "/assets/videos/cena_enigma.mp4",
+        "video_autoplay": True,
         "text": (
             "A casa não aceita a sequência. Uma dor sobe pelo braço.\n\n"
             "Você perdeu uma vida. Pode tentar de novo, ou ir atrás das pistas."
@@ -773,6 +809,8 @@ SCENES = {
     "item_chave": {
         "title": "Chave do porão",
         "image": "/assets/imagens/sala.jpg",
+        "video": "/assets/videos/cena_sala.mp4",
+        "video_autoplay": True,
         "text": (
             "Na alça: PORÃO. Também abre o quarto dos pais.\n\n"
             "Sem essa chave você não chega ao espelho — "
@@ -817,6 +855,8 @@ SCENES = {
     "sotao_escuro": {
         "title": "Sótão sem luz",
         "image": "/assets/imagens/sotao.jpg",
+        "video": "/assets/videos/cena_sotao.mp4",
+        "video_autoplay": True,
         "text": (
             "Escuro demais. A fita e a vela estão aqui, mas sem fósforos "
             "você não vê o chão.\n\n"
@@ -830,6 +870,8 @@ SCENES = {
     "sotao_queda": {
         "title": "Queda no escuro",
         "image": "/assets/imagens/sotao.jpg",
+        "video": "/assets/videos/cena_sotao.mp4",
+        "video_autoplay": True,
         "text": (
             "O pé encontra o vazio entre as tábuas. Você cai. Algo raspa o tornozelo.\n\n"
             "Você perdeu uma vida. Ainda precisa dos fósforos."
@@ -841,6 +883,8 @@ SCENES = {
     "sotao": {
         "title": "O sótão",
         "image": "/assets/imagens/sotao.jpg",
+        "video": "/assets/videos/cena_sotao.mp4",
+        "video_autoplay": True,
         "text": (
             "O fósforo acende. Há um gravador e uma vela branca.\n\n"
             "A fita é a sua voz de criança prometendo deixar alguém no lugar.\n"
@@ -855,6 +899,8 @@ SCENES = {
     "sotao_pista": {
         "title": "O sótão — a prova",
         "image": "/assets/imagens/sotao.jpg",
+        "video": "/assets/videos/cena_sotao.mp4",
+        "video_autoplay": True,
         "text": (
             "Você já ouviu a fita. Sabe o que prometeu.\n\n"
             "Pode descer ao espelho, pegar a vela se ainda não pegou, "
@@ -870,8 +916,8 @@ SCENES = {
     "fita_memoria": {
         "title": "A promessa",
         "image": "/assets/imagens/fita.jpg",
-        "video": "/assets/videos/fita_memoria.mp4",
-        "video_autoplay": False,
+        "video": "/assets/videos/cena_fita.mp4",
+        "video_autoplay": True,
         "text": (
             "Sua voz de criança:\n"
             "\"Quando eu crescer, vou deixar alguém no meu lugar. "
@@ -888,6 +934,8 @@ SCENES = {
     "item_vela": {
         "title": "A vela",
         "image": "/assets/imagens/sotao.jpg",
+        "video": "/assets/videos/cena_sotao.mp4",
+        "video_autoplay": True,
         "text": (
             "A vela cheira a fumaça recente. Alguém — o eco, ou a memória da mãe — "
             "já tentou o ritual.\n\n"
@@ -901,6 +949,8 @@ SCENES = {
     "porta_trancada": {
         "title": "Porão trancado",
         "image": "/assets/imagens/porta_falha.jpg",
+        "video": "/assets/videos/cena_porta.mp4",
+        "video_autoplay": True,
         "sfx": "porta",
         "text": (
             "A porta do porão pede a chave da sala.\n\n"
@@ -914,6 +964,8 @@ SCENES = {
     "porta_falha": {
         "title": "A porta reage",
         "image": "/assets/imagens/porta_falha.jpg",
+        "video": "/assets/videos/cena_porta.mp4",
+        "video_autoplay": True,
         "sfx": "porta",
         "text": (
             "Você empurra. Algo empurra de volta no mesmo ritmo. Uma lasca corta a palma.\n\n"
@@ -926,6 +978,8 @@ SCENES = {
     "porao_escuro": {
         "title": "Porão sem luz",
         "image": "/assets/imagens/porao.jpg",
+        "video": "/assets/videos/cena_porao.mp4",
+        "video_autoplay": True,
         "text": (
             "Sem fósforos o chão some. Você tropeça. O joelho bate no concreto.\n\n"
             "Você perdeu uma vida. Há um pano sobre um espelho, mas você não ousa puxar no escuro.\n\n"
@@ -938,6 +992,8 @@ SCENES = {
     "porao": {
         "title": "O porão",
         "image": "/assets/imagens/porao.jpg",
+        "video": "/assets/videos/cena_porao.mp4",
+        "video_autoplay": True,
         "text": (
             "Nas paredes: o seu nome, e abaixo: ELE FICOU.\n\n"
             "No chão, uma foto rasgada — você criança, e atrás uma sombra com o mesmo sorriso.\n\n"
@@ -953,6 +1009,8 @@ SCENES = {
     "item_foto": {
         "title": "A foto rasgada",
         "image": "/assets/imagens/porao.jpg",
+        "video": "/assets/videos/cena_porao.mp4",
+        "video_autoplay": True,
         "text": (
             "Você no jardim, sorrindo. Atrás, o eco — mesmo sorriso, um passo atrasado.\n\n"
             "Junto com a fita, esta foto prova que você deixou alguém. "
@@ -1010,6 +1068,8 @@ SCENES = {
     "espelho_sem_pista": {
         "title": "FINAL — SEM PROVA",
         "image": "/assets/imagens/espelho.jpg",
+        "video": "/assets/videos/cena_espelho.mp4",
+        "video_autoplay": True,
         "audio": "/assets/audios/trilha_espelho.mp3",
         "text": (
             "Você puxou o pano do espelho sem saber quem era o eco.\n\n"
@@ -1024,6 +1084,8 @@ SCENES = {
     "fuga_falha": {
         "title": "FINAL — FUGA FALHOU",
         "image": "/assets/imagens/corredor.jpg",
+        "video": "/assets/videos/cena_corredor.mp4",
+        "video_autoplay": True,
         "text": (
             "Você tentou fugir sem a chave. A porta da frente não abre.\n\n"
             "Enquanto você puxa a maçaneta, o eco chega atrasado, "
@@ -1037,6 +1099,8 @@ SCENES = {
     "verdade_falha": {
         "title": "A frase sem prova",
         "image": "/assets/imagens/espelho.jpg",
+        "video": "/assets/videos/cena_espelho.mp4",
+        "video_autoplay": True,
         "text": (
             "Você grita: \"Você não é eu!\"\n\n"
             "Mas sem a fita (sótão) e a foto (porão), o eco ri: "
@@ -1051,6 +1115,8 @@ SCENES = {
     "ritual_falha": {
         "title": "O ritual incompleto",
         "image": "/assets/imagens/espelho.jpg",
+        "video": "/assets/videos/cena_espelho.mp4",
+        "video_autoplay": True,
         "text": (
             "O ritual não completa. Falta pelo menos uma peça:\n"
             "vela (sótão), fósforos (cozinha), fita (sótão) "
@@ -1065,6 +1131,8 @@ SCENES = {
     "fim_fuga": {
         "title": "FINAL — FUGA",
         "image": "/assets/imagens/fim_fuga.jpg",
+        "video": "/assets/videos/cena_fim_fuga.mp4",
+        "video_autoplay": True,
         "audio": "/assets/audios/trilha_casa.mp3",
         "text": (
             "Você usa a chave, abre a porta da frente e corre para a rua.\n\n"
@@ -1079,6 +1147,8 @@ SCENES = {
     "fim_verdade": {
         "title": "FINAL — VERDADE",
         "image": "/assets/imagens/fim_verdade.jpg",
+        "video": "/assets/videos/cena_fim_verdade.mp4",
+        "video_autoplay": True,
         "audio": "/assets/audios/trilha_amanhecer.mp3",
         "text": (
             "Você mostra a fita e a foto ao eco.\n"
@@ -1094,6 +1164,8 @@ SCENES = {
     "fim_eco": {
         "title": "FINAL — A TROCA",
         "image": "/assets/imagens/fim_eco.jpg",
+        "video": "/assets/videos/cena_fim_eco.mp4",
+        "video_autoplay": True,
         "stop_audio": True,
         "text": (
             "Você aceita trocar de lugar com o eco.\n\n"
@@ -1112,6 +1184,8 @@ SCENES = {
     "fim_ritual": {
         "title": "FINAL — LIBERTAÇÃO",
         "image": "/assets/imagens/fim_ritual.jpg",
+        "video": "/assets/videos/cena_fim_ritual.mp4",
+        "video_autoplay": True,
         "audio": "/assets/audios/trilha_amanhecer.mp3",
         "text": (
             "Você acende a vela com o fósforo, põe a fita perto do espelho "
@@ -1129,6 +1203,8 @@ SCENES = {
     "fim_ruim": {
         "title": "FINAL — MORTE",
         "image": "/assets/imagens/fim_morte.jpg",
+        "video": "/assets/videos/cena_fim_morte.mp4",
+        "video_autoplay": True,
         "stop_audio": True,
         "text": (
             "Suas três vidas acabaram. Você errou demais "

@@ -49,3 +49,7 @@ Falha de verdade ou ritual **não encerra** a partida: você pode voltar a procu
 Fogo (fósforos) → fita → Casinha.
 
 O enigma só confirma a ordem. O nome **Casinha** só vale se você achou no jardim ou no bilhete da mãe.
+
+## Vídeos
+
+Cenas principais e finais usam clips ambientados de ~5s (estilo cinematográfico), em loop mudo, com fallback para a imagem estática.
