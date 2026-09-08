@@ -49,14 +49,14 @@ backups/            — backup .tar.gz do jogo funcional
 
 ## Finais (resumo)
 
-| Final | Como |
-|-------|------|
-| Fuga | Correr com a chave — o eco fica |
-| Verdade | Fita + foto: você nomeia o eco |
-| Troca | Aceitar trocar de lugar |
-| Libertação | Vela + fósforos + fita + apelido Casinha |
-| Sem prova / fuga falhou | Espelho sem pistas, ou fuga sem chave |
-| Morte | Vida chega a zero |
+| Final | Como | Resultado |
+|-------|------|-----------|
+| Fuga | Correr com a chave | Você livre; eco na casa |
+| Verdade | Fita + foto | Eco some; você livre |
+| Troca | Aceitar trocar | Eco vive sua vida; você preso |
+| Libertação | Vela + fósforos + fita + Casinha | Eco liberto; melhor saída |
+| Sem prova / fuga falhou | Sem pistas ou sem chave | Eco vence / você preso |
+| Morte | Vida chega a zero | A casa fica com você |
 
 Mapa completo: [`docs/mapa-cenas.md`](docs/mapa-cenas.md)
 

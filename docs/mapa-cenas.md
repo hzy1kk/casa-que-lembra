@@ -30,15 +30,17 @@ Não há relógio: explore livremente. **Três vidas.** A partida acaba no espel
 
 ## Finais
 
-| Final | Precisa | O que acontece |
-|-------|---------|----------------|
+Cada final deixa claro: o que você fez, o que acontece com você e com o eco.
+
+| Final | Precisa | Resultado em uma linha |
+|-------|---------|------------------------|
 | **Fuga** | Chave | Você sai; o eco fica na casa |
-| **Verdade** | Fita + foto | Você nomeia o eco; o espelho quebra |
-| **Troca** | Só escolher | Você fica; o eco sai no seu lugar |
-| **Libertação (ritual)** | Vela + fósforos + fita + nome Casinha | O menino é despedido, não destruído |
-| **Sem prova** | Espelho sem fita nem foto | O eco te puxa |
-| **Fuga falhou** | Correr sem chave | A porta não abre; vira troca |
-| **Morte** | 0 vidas | A casa fica com você |
+| **Verdade** | Fita + foto | O eco some; você livre; casa vazia |
+| **Troca** | Só escolher | O eco vive sua vida; você fica preso no espelho |
+| **Libertação (ritual)** | Vela + fósforos + fita + Casinha | Eco libertado em paz; você vai embora sem deixar ninguém |
+| **Sem prova** | Espelho sem fita nem foto | Os dois viram um; ninguém sai |
+| **Fuga falhou** | Correr sem chave | Eco sai no seu lugar; você preso |
+| **Morte** | 0 vidas | Casa fica com o que sobrou de você |
 
 Falha de verdade ou ritual **não encerra** a partida: você pode voltar a procurar o que falta.
 

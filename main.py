@@ -990,14 +990,16 @@ SCENES = {
         "video_autoplay": True,
         "audio": "/assets/audios/trilha_espelho.mp3",
         "text": (
-            "O eco sorri com o seu sorriso.\n"
+            "O eco — o menino que você deixou — sorri com o seu sorriso.\n"
             "\"Eu esperei doze anos. A casa estava com saudade.\"\n\n"
-            "Quatro saídas, cada uma com regra:\n"
-            "• Fuga — precisa da chave da porta.\n"
-            "• Verdade — precisa da fita e da foto.\n"
-            "• Trocar de lugar — você fica, ele sai.\n"
-            "• Ritual — vela + fósforos + fita + o nome Casinha "
-            "(jardim ou bilhete da mãe)."
+            "Escolha o que fazer:\n"
+            "• Fugir — você sai vivo; o eco continua na casa. Precisa da chave.\n"
+            "• Dizer a verdade — você prova que ele não é você (fita + foto) "
+            "e o eco some.\n"
+            "• Trocar de lugar — você aceita ficar no espelho; o eco sai "
+            "vivendo a sua vida.\n"
+            "• Ritual — liberta o menino em paz "
+            "(vela + fósforos + fita + o nome Casinha)."
         ),
         "options": [
             ("Fugir (precisa da chave)", "escolher_fuga"),
@@ -1007,24 +1009,29 @@ SCENES = {
         ],
     },
     "espelho_sem_pista": {
-        "title": "Sem prova",
+        "title": "FINAL — SEM PROVA",
         "image": "/assets/imagens/espelho.jpg",
         "audio": "/assets/audios/trilha_espelho.mp3",
         "text": (
-            "Você puxa o pano sem saber quem é ele.\n\n"
-            "Sem a fita nem a foto, o eco não é um menino — é só o seu rosto. "
-            "Mãos iguais às suas atravessam o vidro e puxam.\n\n"
-            "A casa fica com os dois do mesmo lado. Você deixa de ser o original."
+            "Você puxou o pano do espelho sem saber quem era o eco.\n\n"
+            "Sem a fita e sem a foto, você não tem como provar a diferença "
+            "entre você e ele. Para a casa, os dois são a mesma pessoa.\n\n"
+            "Mãos iguais às suas atravessam o vidro e puxam você para dentro.\n\n"
+            "Resultado: você e o eco viram um só. Ninguém sai. "
+            "A casa fica com os dois."
         ),
         "options": [],
     },
     "fuga_falha": {
-        "title": "A porta não abre",
+        "title": "FINAL — FUGA FALHOU",
         "image": "/assets/imagens/corredor.jpg",
         "text": (
-            "Você corre sem a chave. A porta da frente está trancada por dentro.\n\n"
-            "O eco chega atrasado e põe a mão no seu ombro — a mesma mão.\n\n"
-            "Sem a chave, a fuga vira troca. Ele sai. Você fica."
+            "Você tentou fugir sem a chave. A porta da frente não abre.\n\n"
+            "Enquanto você puxa a maçaneta, o eco chega atrasado, "
+            "põe a mão no seu ombro e empurra você de volta para dentro.\n\n"
+            "Ele passa por você, abre a porta (a casa deixa o eco sair) "
+            "e vai embora com o seu rosto.\n\n"
+            "Resultado: o eco vive a sua vida lá fora. Você fica preso na casa."
         ),
         "options": [],
     },
@@ -1033,9 +1040,9 @@ SCENES = {
         "image": "/assets/imagens/espelho.jpg",
         "text": (
             "Você grita: \"Você não é eu!\"\n\n"
-            "Sem a fita e a foto, a frase não tem peso. O eco ri com a sua garganta. "
-            "O vidro não quebra.\n\n"
-            "Ainda dá tempo: sótão (fita) e porão (foto). Depois volte ao espelho."
+            "Mas sem a fita (sótão) e a foto (porão), o eco ri: "
+            "a casa não acredita só em palavras. O espelho não quebra.\n\n"
+            "Ainda dá para voltar, pegar as provas e tentar de novo."
         ),
         "options": [
             ("Continuar o confronto", "espelho"),
@@ -1046,10 +1053,11 @@ SCENES = {
         "title": "O ritual incompleto",
         "image": "/assets/imagens/espelho.jpg",
         "text": (
-            "Falta peça: vela, fósforos, fita ou o apelido Casinha "
-            "(jardim ou bilhete da mãe).\n\n"
-            "O eco sorri. A casa não perdoa improvisos. Escolha outro caminho, "
-            "ou volte a procurar o que falta."
+            "O ritual não completa. Falta pelo menos uma peça:\n"
+            "vela (sótão), fósforos (cozinha), fita (sótão) "
+            "ou o apelido Casinha (jardim ou bilhete da mãe).\n\n"
+            "O eco espera. Você pode escolher outro final agora, "
+            "ou sair e juntar o que falta."
         ),
         "options": [
             ("Enfrentar de outro modo", "espelho"),
@@ -1060,11 +1068,12 @@ SCENES = {
         "image": "/assets/imagens/fim_fuga.jpg",
         "audio": "/assets/audios/trilha_casa.mp3",
         "text": (
-            "A chave gira. A porta cede. A rua é real. Você corre.\n\n"
-            "Na janela do seu quarto, a luz acende. Alguém com o seu jeito de andar "
-            "passa atrás da cortina — meio segundo atrasado.\n\n"
-            "Você saiu. O eco ficou. A casa não está sozinha. "
-            "Você também não está inteiro."
+            "Você usa a chave, abre a porta da frente e corre para a rua.\n\n"
+            "Você escapou com vida. Mas não enfrentou o eco.\n\n"
+            "Olhando para trás: a luz do seu quarto acende. "
+            "O eco continua lá dentro, andando no seu ritmo, "
+            "meio segundo atrasado — a casa não ficou sozinha.\n\n"
+            "Resultado: você livre. O eco preso na casa. A promessa continua."
         ),
         "options": [],
     },
@@ -1073,11 +1082,13 @@ SCENES = {
         "image": "/assets/imagens/fim_verdade.jpg",
         "audio": "/assets/audios/trilha_amanhecer.mp3",
         "text": (
-            "Você mostra a foto e a fita.\n"
+            "Você mostra a fita e a foto ao eco.\n"
             "\"Você não é eu. Você é o que eu deixei quando fui embora.\"\n\n"
-            "O eco trinca. O espelho estilhaça. A promessa, dita em voz alta, se desfaz.\n\n"
-            "De manhã, no jardim, só o seu coração no tempo certo. "
-            "A casa está vazia de verdade — e isso, desta vez, está certo."
+            "Com as provas, a casa aceita a verdade. "
+            "O espelho quebra. O eco some — a promessa se desfaz.\n\n"
+            "De manhã a casa está vazia de verdade. Só você sobrou, "
+            "no tempo certo, sem cópia atrasada.\n\n"
+            "Resultado: o eco acaba. Você sai livre. A casa para de responder."
         ),
         "options": [],
     },
@@ -1086,11 +1097,16 @@ SCENES = {
         "image": "/assets/imagens/fim_eco.jpg",
         "stop_audio": True,
         "text": (
-            "Você encosta a mão no vidro. O eco encosta a dele.\n\n"
-            "O calor passa para o lado de lá. Você fica no porão, atrasado.\n\n"
-            "Do lado de fora, alguém com o seu rosto abre a porta e sorri no tempo certo.\n\n"
-            "A casa ganhou o morador que pediu. O mundo ganhou uma cópia. "
-            "Você cumpriu a promessa — do lado errado."
+            "Você aceita trocar de lugar com o eco.\n\n"
+            "Encosta a mão no vidro. Ele encosta a dele. "
+            "Vocês trocam: o eco sai do espelho com o seu corpo adulto "
+            "e sobe as escadas. Você fica do lado de dentro — "
+            "no porão, atrasado, no lugar dele.\n\n"
+            "Lá fora, o eco abre a porta da frente e vai viver a sua vida "
+            "(trabalho, rua, gente) como se fosse você.\n\n"
+            "Resultado: o eco fica livre no mundo. Você fica preso na casa. "
+            "A promessa de \"deixar alguém no lugar\" se cumpriu — "
+            "só que o alguém agora é você."
         ),
         "options": [],
     },
@@ -1099,25 +1115,30 @@ SCENES = {
         "image": "/assets/imagens/fim_ritual.jpg",
         "audio": "/assets/audios/trilha_amanhecer.mp3",
         "text": (
-            "Fósforo. Vela. Fita. Você diz: Casinha.\n\n"
-            "A chama mostra o eco como ele é: um menino assustado "
-            "que só queria que a casa não ficasse sozinha.\n\n"
-            "Você apaga a vela com os dedos. Ele encolhe e some — "
-            "não destruído, despedido.\n\n"
-            "No quintal, a fita queima. A casa, pela primeira vez em doze anos, "
-            "não responde. Você pode ir embora sem deixar ninguém."
+            "Você acende a vela com o fósforo, põe a fita perto do espelho "
+            "e diz o nome certo: Casinha.\n\n"
+            "A chama mostra o eco como ele é: um menino com medo "
+            "de a casa ficar sozinha — não um monstro.\n\n"
+            "Você apaga a vela. Ele some em paz (despedido, não destruído). "
+            "A fita queima no quintal. A casa, pela primeira vez em doze anos, "
+            "fica em silêncio.\n\n"
+            "Resultado: o eco é libertado. Você pode ir embora "
+            "sem deixar ninguém no seu lugar. Melhor final."
         ),
         "options": [],
     },
     "fim_ruim": {
-        "title": "FINAL — A CASA FICA COM VOCÊ",
+        "title": "FINAL — MORTE",
         "image": "/assets/imagens/fim_morte.jpg",
         "stop_audio": True,
         "text": (
-            "As três vidas acabam. A escuridão fecha. "
-            "Os passos atrasados sincronizam com os seus.\n\n"
-            "Não há mais original nem cópia. Só um morador no ritmo da casa.\n\n"
-            "Você explorou até a casa te levar."
+            "Suas três vidas acabaram. Você errou demais "
+            "(escuro sem fósforos, porta, eco, enigma…).\n\n"
+            "A casa não deixa você sair. Os passos do eco "
+            "sincronizam com os seus até não dar mais para saber "
+            "quem é o original.\n\n"
+            "Resultado: você morre para o mundo de fora. "
+            "A casa fica com o que sobrou de você e do eco — um só morador."
         ),
         "options": [],
     },
