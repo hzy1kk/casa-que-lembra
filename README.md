@@ -4,8 +4,6 @@ Terror narrativo interativo no framework **PyScript GameJam V2**.
 
 Você (adulto) voltou à casa da infância, vazia há 12 anos. Quando criança, prometeu que não a deixaria sozinha — e deixou um **eco** no seu lugar. Explore a casa, junte provas e enfrente o espelho do porão. **Sem limite de turnos:** jogue até um final — ou até morrer.
 
-**Autor:** lucas lohan
-
 ## Jogar online
 
 Após o deploy Vercel: [casa-que-lembra.vercel.app](https://casa-que-lembra.vercel.app)

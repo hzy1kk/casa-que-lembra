@@ -25,7 +25,6 @@ except ImportError:
 CONFIG = {
     "titulo": "A Casa que Lembra",
     "subtitulo": "Você deixou alguém no seu lugar. Explore até o espelho — ou até a casa te levar.",
-    "autor": "lucas lohan",
     "icone": "⌂",
     "capa": "/assets/imagens/capa.jpg",
     "trilha_inicial": "/assets/audios/trilha_casa.mp3",
@@ -1474,10 +1473,14 @@ def configurar_interface():
     """Preenche a tela inicial e liga o Python ao JavaScript dos botões."""
     document.querySelector("#boot-title").innerText = CONFIG["titulo"]
     document.querySelector("#boot-sub").innerText = CONFIG.get("subtitulo", "")
-    document.querySelector("#boot-author").innerText = f"por {CONFIG.get('autor', '')}"
+    boot_author = document.querySelector("#boot-author")
+    if boot_author is not None:
+        boot_author.innerText = ""
     document.querySelector("#boot-icon").innerText = CONFIG.get("icone", "")
     document.querySelector("#titulo-jogo").innerText = CONFIG["titulo"]
-    document.querySelector("#autor-jogo").innerText = CONFIG.get("autor", "")
+    autor_el = document.querySelector("#autor-jogo")
+    if autor_el is not None:
+        autor_el.innerText = ""
 
     # Capa de boot agora é CSS full-bleed (#boot-bg); só atualiza se o elemento existir
     cover = document.querySelector("#boot-cover")
