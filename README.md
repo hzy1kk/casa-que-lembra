@@ -41,9 +41,21 @@ backups/            — backup .tar.gz do jogo funcional
 - Decisões condicionadas a itens (porão, quarto dos pais, verdade, ritual)
 - **Fuga** exige a **chave** (fósforos são luz / ritual, não abrem a porta)
 - **Casinha** só pelo jardim ou bilhete da mãe
-- **Save / Continuar** e **ranking** no `localStorage` do navegador
+- **Ranking global da competição** (`/ranking` + envio de apelido ao terminar)
+- **Save / Continuar** no `localStorage` do navegador
 - SFX curtos + trilhas por cena; vídeos ambientados em cenas-chave
 - Até **4 opções** por cena (só botões — sem `input()`)
+
+## Ranking (competição)
+
+1. No [Vercel Marketplace](https://vercel.com/marketplace), adicione **Upstash Redis** (ou Vercel KV) ao projeto.
+2. Confirme as variáveis no projeto:
+   - `UPSTASH_REDIS_REST_URL` + `UPSTASH_REDIS_REST_TOKEN`
+   - (ou `KV_REST_API_URL` + `KV_REST_API_TOKEN`)
+3. Redeploy.
+4. Jogadores terminam a partida → digitam apelido → entram no placar em `/ranking`.
+
+Sem Redis configurado, o jogo continua normal; só o placar global fica indisponível.
 
 ## Finais (resumo)
 

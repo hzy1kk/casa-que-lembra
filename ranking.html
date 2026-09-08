@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Ranking — A Casa que Lembra</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,500;7..72,650&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #070405;
+      --ink: #efe6dc;
+      --muted: #9a8f86;
+      --blood: #7a1f28;
+      --blood-hot: #c44048;
+      --line: rgba(196, 64, 72, 0.35);
+      --font-story: "Literata", Georgia, serif;
+      --font-ui: "IBM Plex Sans", system-ui, sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100dvh;
+      color: var(--ink);
+      font-family: var(--font-ui);
+      background:
+        radial-gradient(ellipse 80% 60% at 50% 0%, rgba(122, 31, 40, 0.35), transparent 55%),
+        linear-gradient(180deg, #12080a, var(--bg) 40%, #050304);
+    }
+    main {
+      width: min(720px, 100%);
+      margin: 0 auto;
+      padding: 2rem 1.1rem 3rem;
+    }
+    header { margin-bottom: 1.5rem; }
+    .eyebrow {
+      margin: 0 0 0.4rem;
+      font-size: 0.75rem;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--blood-hot);
+    }
+    h1 {
+      margin: 0;
+      font-family: var(--font-story);
+      font-size: clamp(1.8rem, 5vw, 2.6rem);
+      font-weight: 650;
+    }
+    .sub {
+      margin: 0.6rem 0 0;
+      color: var(--muted);
+      line-height: 1.45;
+      max-width: 42ch;
+    }
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+      margin: 1.2rem 0 1.6rem;
+    }
+    a.btn, button.btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 44px;
+      padding: 0.55rem 1rem;
+      border: 1px solid var(--blood);
+      background: rgba(18, 8, 10, 0.9);
+      color: var(--ink);
+      text-decoration: none;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      font-size: 0.8rem;
+      cursor: pointer;
+      font-family: var(--font-ui);
+    }
+    a.btn.primary {
+      background: linear-gradient(180deg, #9a2a34, #6e1c24);
+      border-color: #c43340;
+    }
+    .board {
+      border: 1px solid var(--line);
+      background: rgba(0,0,0,0.45);
+      overflow: hidden;
+    }
+    .board-head, .row {
+      display: grid;
+      grid-template-columns: 3rem 1fr 5rem 7rem;
+      gap: 0.5rem;
+      align-items: center;
+      padding: 0.75rem 0.9rem;
+    }
+    .board-head {
+      font-size: 0.68rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      border-bottom: 1px solid var(--line);
+    }
+    .row {
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      font-size: 0.95rem;
+    }
+    .row:last-child { border-bottom: 0; }
+    .row.top-1 { background: rgba(196, 64, 72, 0.16); }
+    .row.top-2 { background: rgba(196, 64, 72, 0.1); }
+    .row.top-3 { background: rgba(196, 64, 72, 0.06); }
+    .pos { color: var(--blood-hot); font-weight: 600; }
+    .nome { font-family: var(--font-story); font-weight: 650; }
+    .pts { font-weight: 600; text-align: right; }
+    .meta { color: var(--muted); font-size: 0.78rem; }
+    .status {
+      margin: 0.8rem 0 0;
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
+    .status.error { color: #e08a90; }
+    @media (max-width: 560px) {
+      .board-head, .row {
+        grid-template-columns: 2.4rem 1fr 4.2rem;
+      }
+      .meta-col { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <p class="eyebrow">Competição</p>
+      <h1>Ranking global</h1>
+      <p class="sub">
+        Quem faz mais pontos em <em>A Casa que Lembra</em>.
+        Termine uma partida, digite um apelido e entre no placar.
+      </p>
+      <div class="actions">
+        <a class="btn primary" href="/">Jogar</a>
+        <button class="btn" type="button" id="btn-refresh">Atualizar</button>
+      </div>
+    </header>
+
+    <section class="board" aria-live="polite">
+      <div class="board-head">
+        <span>#</span>
+        <span>Jogador</span>
+        <span style="text-align:right">Pts</span>
+        <span class="meta-col">Final</span>
+      </div>
+      <div id="rows"></div>
+    </section>
+    <p class="status" id="status">Carregando ranking…</p>
+  </main>
+  <script>
+    const rows = document.getElementById("rows");
+    const status = document.getElementById("status");
+
+    async function carregar() {
+      status.textContent = "Carregando ranking…";
+      status.classList.remove("error");
+      rows.innerHTML = "";
+      try {
+        const res = await fetch("/api/ranking", { cache: "no-store" });
+        const data = await res.json();
+        if (!res.ok || !data.ok) {
+          throw new Error(data.error || data.setup || "Falha ao carregar");
+        }
+        const lista = data.ranking || [];
+        if (!lista.length) {
+          status.textContent = "Ainda não há pontuações. Seja o primeiro a terminar o jogo.";
+          return;
+        }
+        lista.forEach((item, i) => {
+          const div = document.createElement("div");
+          div.className = "row" + (i < 3 ? ` top-${i + 1}` : "");
+          div.innerHTML =
+            `<span class="pos">${i + 1}º</span>` +
+            `<span class="nome"></span>` +
+            `<span class="pts"></span>` +
+            `<span class="meta meta-col"></span>`;
+          div.querySelector(".nome").textContent = item.nome || "?";
+          div.querySelector(".pts").textContent = String(item.pontos ?? 0);
+          div.querySelector(".meta").textContent = item.final || "—";
+          rows.appendChild(div);
+        });
+        status.textContent = `${lista.length} jogador(es) no placar.`;
+      } catch (err) {
+        status.classList.add("error");
+        status.textContent = err.message || "Ranking indisponível.";
+      }
+    }
+
+    document.getElementById("btn-refresh").addEventListener("click", carregar);
+    carregar();
+  </script>
+</body>
+</html>

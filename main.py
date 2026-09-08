@@ -273,7 +273,7 @@ def _atualizar_botao_continuar():
 
 
 def registrar_ranking(final_id):
-    """Guarda top 5 pontuações (pontos + nome do final) no localStorage."""
+    """Registra pontuação local e abre o envio ao ranking global da competição."""
     nomes = {
         "fim_fuga": "Fuga",
         "fim_verdade": "Verdade",
@@ -283,9 +283,11 @@ def registrar_ranking(final_id):
         "fuga_falha": "Fuga falhou",
         "espelho_sem_pista": "Sem lembrar",
     }
+    final_nome = nomes.get(final_id, final_id)
     entrada = {
+        "nome": "Você",
         "pontos": state["pontos"],
-        "final": nomes.get(final_id, final_id),
+        "final": final_nome,
         "acoes": state.get("acoes", state.get("turnos", 0)),
     }
     lista = []
@@ -297,15 +299,36 @@ def registrar_ranking(final_id):
         lista = []
     lista.append(entrada)
     lista.sort(key=lambda x: x.get("pontos", 0), reverse=True)
-    lista = lista[:5]
+    lista = lista[:8]
     try:
         window.localStorage.setItem(RANK_KEY, json.dumps(lista))
+    except Exception:
+        pass
+
+    # Modal JS → POST /api/ranking (placar global na web)
+    try:
+        window.abrirModalRanking(
+            json.dumps(
+                {
+                    "pontos": int(state["pontos"]),
+                    "final": final_nome,
+                    "acoes": int(state.get("acoes", 0)),
+                }
+            )
+        )
     except Exception:
         pass
     atualizar_ranking_ui()
 
 
 def atualizar_ranking_ui():
+    """Preferê o placar global; se falhar, mostra o ranking local."""
+    try:
+        # JS preenche #ranking-lista com o top global
+        window.carregarRankingGlobal()
+        return
+    except Exception:
+        pass
     ol = document.querySelector("#ranking-lista")
     if not ol:
         return
@@ -322,9 +345,13 @@ def atualizar_ranking_ui():
         li.innerText = "Nenhuma partida ainda"
         ol.appendChild(li)
         return
-    for item in lista:
+    for i, item in enumerate(lista[:8]):
         li = document.createElement("li")
-        li.innerText = f"{item.get('pontos', 0)} pts — {item.get('final', '?')} ({item.get('acoes', item.get('turnos', '?'))} ações)"
+        nome = item.get("nome") or "Você"
+        li.innerText = (
+            f"{i + 1}º · {item.get('pontos', 0)} pts — {nome} · "
+            f"{item.get('final', '?')}"
+        )
         ol.appendChild(li)
 
 

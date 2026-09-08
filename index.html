@@ -203,13 +203,13 @@
         text-align: left;
         background: rgba(0,0,0,0.45);
         border: 1px solid var(--line);
-        padding: 0.55rem 0.7rem;
+        padding: 0.7rem 0.85rem;
       }
 
       #ranking-box > p {
-        margin: 0 0 0.4rem;
+        margin: 0 0 0.45rem;
         font-family: var(--font-ui);
-        font-size: 0.62rem;
+        font-size: 0.72rem;
         letter-spacing: 0.14em;
         text-transform: uppercase;
         color: var(--blood-hot);
@@ -217,9 +217,113 @@
 
       #ranking-lista {
         margin: 0;
-        padding-left: 1.1rem;
+        padding-left: 1.15rem;
         font-family: var(--font-ui);
-        font-size: 0.7rem;
+        font-size: 0.82rem;
+        color: var(--muted);
+        line-height: 1.45;
+      }
+
+      #ranking-lista li {
+        margin: 0.2rem 0;
+      }
+
+      #ranking-lista .pts {
+        color: var(--ink);
+        font-weight: 600;
+      }
+
+      #ranking-links {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.55rem;
+        margin-top: 0.65rem;
+      }
+
+      #ranking-links a {
+        color: var(--blood-hot);
+        font-family: var(--font-ui);
+        font-size: 0.72rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        text-decoration: none;
+        border-bottom: 1px solid rgba(196, 64, 72, 0.4);
+      }
+
+      #rank-modal {
+        position: fixed;
+        inset: 0;
+        z-index: 80;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem;
+        background: rgba(0,0,0,0.72);
+      }
+
+      #rank-modal.open { display: flex; }
+
+      #rank-modal-card {
+        width: min(420px, 100%);
+        background: #12080a;
+        border: 1px solid var(--line);
+        padding: 1.1rem 1.15rem 1.2rem;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.55);
+      }
+
+      #rank-modal-card h3 {
+        margin: 0 0 0.35rem;
+        font-family: var(--font-story);
+        font-size: 1.35rem;
+      }
+
+      #rank-modal-card p {
+        margin: 0 0 0.85rem;
+        color: var(--muted);
+        font-size: 0.92rem;
+        line-height: 1.4;
+      }
+
+      #rank-nome {
+        width: 100%;
+        min-height: 46px;
+        margin: 0 0 0.7rem;
+        padding: 0.55rem 0.7rem;
+        border: 1px solid var(--line);
+        background: rgba(0,0,0,0.55);
+        color: var(--ink);
+        font-family: var(--font-ui);
+        font-size: 1rem;
+      }
+
+      #rank-modal-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+      }
+
+      #rank-modal-actions button {
+        flex: 1 1 auto;
+        min-height: 44px;
+        font-family: var(--font-ui);
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        font-size: 0.78rem;
+        cursor: pointer;
+        border: 1px solid var(--blood);
+        background: transparent;
+        color: var(--ink);
+      }
+
+      #rank-enviar {
+        background: linear-gradient(180deg, #9a2a34, #6e1c24) !important;
+        border-color: #c43340 !important;
+      }
+
+      #rank-modal-msg {
+        margin: 0.65rem 0 0;
+        min-height: 1.2em;
+        font-size: 0.82rem;
         color: var(--muted);
       }
 
@@ -815,10 +919,27 @@
             <button type="button" id="btn-continuar" class="hidden">▶ Continuar</button>
           </div>
           <div id="ranking-box">
-            <p>Melhores pontuações</p>
+            <p>Ranking da competição</p>
             <ol id="ranking-lista"></ol>
+            <div id="ranking-links">
+              <a href="/ranking">Placar completo</a>
+            </div>
           </div>
         </div>
+      </div>
+    </div>
+
+    <div id="rank-modal" aria-hidden="true">
+      <div id="rank-modal-card" role="dialog" aria-labelledby="rank-modal-title">
+        <h3 id="rank-modal-title">Salvar no ranking</h3>
+        <p id="rank-modal-resumo">Sua pontuação entra na competição global.</p>
+        <label for="rank-nome" class="hidden">Apelido</label>
+        <input id="rank-nome" type="text" maxlength="16" placeholder="Seu apelido (2–16 letras)" autocomplete="nickname" />
+        <div id="rank-modal-actions">
+          <button type="button" id="rank-enviar">Enviar pontuação</button>
+          <button type="button" id="rank-pular">Agora não</button>
+        </div>
+        <p id="rank-modal-msg"></p>
       </div>
     </div>
 
@@ -1206,7 +1327,140 @@
           syncMuteButton();
         }
 
+        // ----- Ranking global da competição -----
+        let pendingRank = null;
+
+        function renderRankingLista(lista, modo) {
+          const ol = document.getElementById("ranking-lista");
+          if (!ol) return;
+          ol.innerHTML = "";
+          if (!lista || !lista.length) {
+            const li = document.createElement("li");
+            li.textContent = modo === "global"
+              ? "Ninguém no placar ainda — termine o jogo e envie seu apelido."
+              : "Nenhuma partida local ainda.";
+            ol.appendChild(li);
+            return;
+          }
+          lista.slice(0, 8).forEach((item, i) => {
+            const li = document.createElement("li");
+            const nome = item.nome ? String(item.nome) : "Anônimo";
+            const pts = item.pontos != null ? item.pontos : 0;
+            const fin = item.final || "?";
+            const strong = document.createElement("span");
+            strong.className = "pts";
+            strong.textContent = `${i + 1}º · ${pts} pts`;
+            li.appendChild(strong);
+            li.appendChild(document.createTextNode(` — ${nome} · ${fin}`));
+            ol.appendChild(li);
+          });
+        }
+
+        window.carregarRankingGlobal = async function () {
+          try {
+            const res = await fetch("/api/ranking", { cache: "no-store" });
+            const data = await res.json();
+            if (res.ok && data.ok && Array.isArray(data.ranking)) {
+              renderRankingLista(data.ranking, "global");
+              return true;
+            }
+            if (data && data.setup) {
+              renderRankingLista([], "global");
+              const ol = document.getElementById("ranking-lista");
+              if (ol) {
+                ol.innerHTML = "";
+                const li = document.createElement("li");
+                li.textContent = "Placar global aguardando configuração do Redis no Vercel.";
+                ol.appendChild(li);
+              }
+              return false;
+            }
+          } catch (e) {}
+          return false;
+        };
+
+        window.abrirModalRanking = function (payload) {
+          if (typeof payload === "string") {
+            try { payload = JSON.parse(payload); } catch (e) { payload = null; }
+          }
+          pendingRank = payload || null;
+          const modal = document.getElementById("rank-modal");
+          const resumo = document.getElementById("rank-modal-resumo");
+          const msg = document.getElementById("rank-modal-msg");
+          const input = document.getElementById("rank-nome");
+          if (!modal || !pendingRank) return;
+          if (resumo) {
+            resumo.textContent =
+              `${pendingRank.pontos} pts · final ${pendingRank.final} · ${pendingRank.acoes} ações. Digite um apelido para a competição.`;
+          }
+          if (msg) msg.textContent = "";
+          if (input) {
+            input.value = localStorage.getItem("casa_que_lembra_nick") || "";
+            setTimeout(() => input.focus(), 50);
+          }
+          modal.classList.add("open");
+          modal.setAttribute("aria-hidden", "false");
+        };
+
+        window.fecharModalRanking = function () {
+          const modal = document.getElementById("rank-modal");
+          if (!modal) return;
+          modal.classList.remove("open");
+          modal.setAttribute("aria-hidden", "true");
+          pendingRank = null;
+        };
+
+        async function enviarRankingPendente() {
+          const msg = document.getElementById("rank-modal-msg");
+          const input = document.getElementById("rank-nome");
+          if (!pendingRank) return;
+          const nome = (input && input.value || "").trim();
+          if (nome.length < 2) {
+            if (msg) msg.textContent = "Apelido precisa ter pelo menos 2 caracteres.";
+            return;
+          }
+          if (msg) msg.textContent = "Enviando…";
+          try {
+            localStorage.setItem("casa_que_lembra_nick", nome.slice(0, 16));
+            const res = await fetch("/api/ranking", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                nome,
+                pontos: pendingRank.pontos,
+                final: pendingRank.final,
+                acoes: pendingRank.acoes,
+              }),
+            });
+            const data = await res.json();
+            if (!res.ok || !data.ok) {
+              throw new Error(data.error || data.setup || "Falha ao enviar");
+            }
+            if (msg) {
+              msg.textContent = data.posicao
+                ? `Salvo! Você está em ${data.posicao}º lugar.`
+                : "Pontuação salva no placar global.";
+            }
+            if (data.ranking) renderRankingLista(data.ranking, "global");
+            setTimeout(() => window.fecharModalRanking(), 1200);
+          } catch (err) {
+            if (msg) msg.textContent = err.message || "Não foi possível enviar agora.";
+          }
+        }
+
+        const btnEnviar = document.getElementById("rank-enviar");
+        const btnPular = document.getElementById("rank-pular");
+        if (btnEnviar) btnEnviar.addEventListener("click", enviarRankingPendente);
+        if (btnPular) btnPular.addEventListener("click", () => window.fecharModalRanking());
+        const rankInput = document.getElementById("rank-nome");
+        if (rankInput) {
+          rankInput.addEventListener("keydown", (ev) => {
+            if (ev.key === "Enter") enviarRankingPendente();
+          });
+        }
+
         wireUi();
+        window.carregarRankingGlobal();
       })();
     </script>
 
