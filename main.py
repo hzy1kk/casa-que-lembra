@@ -4,7 +4,7 @@ Terror narrativo interativo (botões, sem input/terminal).
 
 Estrutura didática (escola / GameJam):
   CONFIG  → dados fixos do jogo (título, vida, capa, trilha)
-  state   → o que muda durante a partida (vida, itens, turnos, flags)
+  state   → o que muda durante a partida (vida, itens, ações, flags)
   SCENES  → cada tela: texto, imagem, até 4 opções (texto, nome_da_acao)
   executar_acao() → regras: o que acontece quando o jogador clica
 """
@@ -24,7 +24,7 @@ except ImportError:
 
 CONFIG = {
     "titulo": "A Casa que Lembra",
-    "subtitulo": "Você deixou alguém no seu lugar. Agora ele quer a casa de volta.",
+    "subtitulo": "Você deixou alguém no seu lugar. Explore até o espelho — ou até a casa te levar.",
     "autor": "lucas lohan",
     "icone": "⌂",
     "capa": "/assets/imagens/capa.jpg",
@@ -33,7 +33,6 @@ CONFIG = {
     "vida_inicial": 3,
     "pontos_iniciais": 0,
     "cena_inicial": "inicio",
-    "max_turnos": 15,
 }
 
 SAVE_KEY = "casa_que_lembra_save"
@@ -47,28 +46,20 @@ SFX = {
     "dano": "/assets/audios/sfx_dano.mp3",
 }
 
-# Finais conhecidos (para ranking e para não forçar “atrasado”)
+# Finais conhecidos (ranking). Sem limite de tempo: a partida acaba no
+# espelho (escolha) ou quando a vida chega a zero (fim_ruim).
 FINAIS = {
     "fim_fuga",
     "fim_verdade",
     "fim_eco",
     "fim_ritual",
     "fim_ruim",
-    "fim_atrasado",
     "fuga_falha",
-    "verdade_falha",
     "espelho_sem_pista",
 }
 
-# No espelho a contagem “pausa”: o jogador ainda pode escolher o final
-CONFRONTACAO = {
-    "dialogo_eco",
-    "espelho",
-    "ritual_falha",
-}
-
 # ---------------------------------------------------------------------------
-# STATE — inventário, vida, turnos e flags da história
+# STATE — inventário, vida, ações e flags da história
 # ---------------------------------------------------------------------------
 
 state = {}
@@ -80,7 +71,7 @@ def _estado_inicial():
         "vida": CONFIG["vida_inicial"],
         "pontos": CONFIG["pontos_iniciais"],
         "inventario": [],
-        "turnos": 0,
+        "acoes": 0,  # contagem só para ranking (sem limite)
         "cena_atual": None,
         "flags": {
             "ouviu_fita": False,
@@ -117,11 +108,9 @@ _js_proxies = []
 # ---------------------------------------------------------------------------
 
 def atualizar_status():
-    """Atualiza vida, pontos, turnos e inventário na HUD."""
+    """Atualiza vida, pontos e inventário na HUD (sem relógio/limite)."""
     document.querySelector("#stat-vida").innerText = str(state["vida"])
     document.querySelector("#stat-pontos").innerText = str(state["pontos"])
-    max_t = CONFIG["max_turnos"]
-    document.querySelector("#stat-turnos").innerText = f"{state['turnos']}/{max_t}"
     inv = state["inventario"]
     inv_el = document.querySelector("#stat-inv")
     if inv_el:
@@ -236,30 +225,6 @@ def _eh_final(nome):
     return nome in FINAIS or (nome and nome.startswith("fim_"))
 
 
-def _em_rota_do_espelho(nome):
-    """True se a cena é o confronto ou ainda oferece ir ao espelho / escolher final."""
-    if not nome:
-        return False
-    if nome in CONFRONTACAO or _eh_final(nome):
-        return True
-    cena = SCENES.get(nome) or {}
-    for _, acao in cena.get("options") or []:
-        if acao in (
-            "ir_espelho",
-            "escolher_fuga",
-            "escolher_verdade",
-            "escolher_ritual",
-            "fim_eco",
-            "eco_lembrar",
-            "eco_acabar",
-            "eco_ouvir",
-            "eco_silencio",
-            "espelho",
-        ):
-            return True
-    return False
-
-
 def salvar_jogo():
     """Grava a partida atual no localStorage do navegador."""
     if _eh_final(state.get("cena_atual")):
@@ -269,7 +234,7 @@ def salvar_jogo():
         "vida": state["vida"],
         "pontos": state["pontos"],
         "inventario": list(state["inventario"]),
-        "turnos": state["turnos"],
+        "acoes": state.get("acoes", state.get("turnos", 0)),
         "cena_atual": state["cena_atual"],
         "flags": dict(state["flags"]),
     }
@@ -316,15 +281,13 @@ def registrar_ranking(final_id):
         "fim_eco": "O Eco sai",
         "fim_ritual": "Ritual secreto",
         "fim_ruim": "Morte",
-        "fim_atrasado": "Atrasado",
         "fuga_falha": "Fuga falhou",
-        "verdade_falha": "Verdade sem prova",
         "espelho_sem_pista": "Sem lembrar",
     }
     entrada = {
         "pontos": state["pontos"],
         "final": nomes.get(final_id, final_id),
-        "turnos": state["turnos"],
+        "acoes": state.get("acoes", state.get("turnos", 0)),
     }
     lista = []
     try:
@@ -362,7 +325,7 @@ def atualizar_ranking_ui():
         return
     for item in lista:
         li = document.createElement("li")
-        li.innerText = f"{item.get('pontos', 0)} pts — {item.get('final', '?')} ({item.get('turnos', '?')} turnos)"
+        li.innerText = f"{item.get('pontos', 0)} pts — {item.get('final', '?')} ({item.get('acoes', item.get('turnos', '?'))} ações)"
         ol.appendChild(li)
 
 
@@ -462,7 +425,7 @@ def continuar_jogo(event=None):
     state["vida"] = data.get("vida", CONFIG["vida_inicial"])
     state["pontos"] = data.get("pontos", 0)
     state["inventario"] = list(data.get("inventario") or [])
-    state["turnos"] = data.get("turnos", 0)
+    state["acoes"] = data.get("acoes", data.get("turnos", 0))
     flags = data.get("flags") or {}
     for k in state["flags"]:
         if k in flags:
@@ -494,8 +457,9 @@ def _finalizar(nome_cena, pontos_extra=0):
 # História (o que precisa fazer sentido):
 # Aos 8 anos você prometeu à casa que não a deixaria sozinha.
 # Aos 18, foi embora. A casa ficou com um "eco": uma cópia sua, atrasada.
-# Doze anos depois você volta e acorda no quarto. A casa conta até 15.
-# Objetivo: juntar provas, ir ao espelho do porão e escolher o que fazer.
+# Doze anos depois você (adulto) volta e acorda no quarto.
+# Sem relógio: explore, junte provas, enfrente o espelho — ou morra (0 vidas).
+# Identidade: VOCÊ = adulto que voltou; ECO = o menino/cópia que ficou.
 # ---------------------------------------------------------------------------
 
 SCENES = {
@@ -508,10 +472,10 @@ SCENES = {
             "Você voltou para a casa onde cresceu. Está vazia há doze anos — "
             "desde o dia em que você saiu e não olhou para trás.\n\n"
             "Acordou no seu antigo quarto. O colchão cheira a mofo e a sabão em pó.\n\n"
-            "No guarda-roupa, o reflexo pisca meio segundo depois de você.\n\n"
+            "No guarda-roupa, o reflexo é o seu — adulto — mas pisca meio segundo depois.\n\n"
             "Na mesinha, um bilhete na sua letra de criança:\n"
             "\"Não deixe a casa sozinha. Se for embora, deixe alguém no seu lugar.\"\n\n"
-            "Do corredor, passos imitam os seus — atrasados. A casa está contando."
+            "Do corredor, passos imitam os seus — atrasados. O eco ainda mora aqui."
         ),
         "options": [
             ("Ler o verso do bilhete", "ler_bilhete"),
@@ -523,12 +487,12 @@ SCENES = {
         "image": "/assets/imagens/inicio.jpg",
         "text": (
             "No verso, a letra treme:\n"
-            "\"Ela conta até quinze. Depois o que ficou no seu lugar vira você.\"\n\n"
+            "\"Cada erro te aproxima dele. Se a casa te cansar, o que ficou no seu lugar vira você.\"\n\n"
             "Você lembra: aos oito anos, com medo de dormir sozinho, "
             "prometeu à casa que nunca iria embora.\n\n"
-            "Aos dezoito, foi. Alguém — ou algo — ficou.\n\n"
-            "Objetivo: achar provas do que você fez, descer ao porão "
-            "e enfrentar o eco no espelho. Antes do quinze."
+            "Aos dezoito, foi. Um eco — a sua cópia atrasada — ficou.\n\n"
+            "Objetivo: juntar provas, descer ao porão e enfrentar o espelho. "
+            "Não há relógio. Há três vidas. Explore até o fim — ou até a casa te levar."
         ),
         "options": [
             ("Ir ao corredor", "corredor"),
@@ -631,10 +595,11 @@ SCENES = {
         "title": "A cozinha",
         "image": "/assets/imagens/cozinha.jpg",
         "text": (
-            "Na parede, riscos: 1 2 3… a casa está contando até quinze.\n\n"
+            "Na parede, riscos: dias, anos — o eco marcou o tempo sozinho.\n\n"
             "Na pia, um prato ainda quente. Ninguém mora aqui. "
             "O eco cozinha no seu horário, atrasado.\n\n"
-            "Na gaveta: fósforos. Sem eles o sótão e o porão ficam escuros demais."
+            "Na gaveta: fósforos. Sem eles o sótão e o porão ficam escuros demais "
+            "(e cada queda custa uma vida)."
         ),
         "options": [
             ("Pegar os fósforos", "pegar_fosforos"),
@@ -764,7 +729,7 @@ SCENES = {
         "options": [
             ("Fogo → fita → Casinha", "enigma_certo"),
             ("Chave → foto → eco", "enigma_errado"),
-            ("Vela → pedra → quinze", "enigma_errado"),
+            ("Vela → pedra → chave", "enigma_errado"),
             ("Deixar para depois", "voltar_sala"),
         ],
     },
@@ -1028,16 +993,17 @@ SCENES = {
             "O eco sorri com o seu sorriso.\n"
             "\"Eu esperei doze anos. A casa estava com saudade.\"\n\n"
             "Quatro saídas, cada uma com regra:\n"
-            "• Fuga — precisa de chave ou fósforos.\n"
+            "• Fuga — precisa da chave da porta.\n"
             "• Verdade — precisa da fita e da foto.\n"
             "• Trocar de lugar — você fica, ele sai.\n"
-            "• Ritual — vela, fósforos, fita e o nome Casinha."
+            "• Ritual — vela + fósforos + fita + o nome Casinha "
+            "(jardim ou bilhete da mãe)."
         ),
         "options": [
-            ("Fugir pela porta da frente", "escolher_fuga"),
+            ("Fugir (precisa da chave)", "escolher_fuga"),
             ("Dizer a verdade (fita + foto)", "escolher_verdade"),
             ("Trocar de lugar com o eco", "fim_eco"),
-            ("Fazer o ritual (vela + nome)", "escolher_ritual"),
+            ("Ritual (vela+fósforo+fita+Casinha)", "escolher_ritual"),
         ],
     },
     "espelho_sem_pista": {
@@ -1056,9 +1022,9 @@ SCENES = {
         "title": "A porta não abre",
         "image": "/assets/imagens/corredor.jpg",
         "text": (
-            "Você corre sem chave e sem luz. A porta da frente está trancada por dentro.\n\n"
+            "Você corre sem a chave. A porta da frente está trancada por dentro.\n\n"
             "O eco chega atrasado e põe a mão no seu ombro — a mesma mão.\n\n"
-            "Sem ferramenta para sair, a fuga vira troca. Ele sai. Você fica."
+            "Sem a chave, a fuga vira troca. Ele sai. Você fica."
         ),
         "options": [],
     },
@@ -1068,10 +1034,13 @@ SCENES = {
         "text": (
             "Você grita: \"Você não é eu!\"\n\n"
             "Sem a fita e a foto, a frase não tem peso. O eco ri com a sua garganta. "
-            "O vidro não quebra. Você quebra.\n\n"
-            "Volte outra vez: sótão (fita) e porão (foto)."
+            "O vidro não quebra.\n\n"
+            "Ainda dá tempo: sótão (fita) e porão (foto). Depois volte ao espelho."
         ),
-        "options": [],
+        "options": [
+            ("Continuar o confronto", "espelho"),
+            ("Subir buscar provas", "corredor"),
+        ],
     },
     "ritual_falha": {
         "title": "O ritual incompleto",
@@ -1091,7 +1060,7 @@ SCENES = {
         "image": "/assets/imagens/fim_fuga.jpg",
         "audio": "/assets/audios/trilha_casa.mp3",
         "text": (
-            "A chave (ou a chama) abre a porta. A rua é real. Você corre.\n\n"
+            "A chave gira. A porta cede. A rua é real. Você corre.\n\n"
             "Na janela do seu quarto, a luz acende. Alguém com o seu jeito de andar "
             "passa atrás da cortina — meio segundo atrasado.\n\n"
             "Você saiu. O eco ficou. A casa não está sozinha. "
@@ -1145,21 +1114,10 @@ SCENES = {
         "image": "/assets/imagens/fim_morte.jpg",
         "stop_audio": True,
         "text": (
-            "A escuridão fecha. Os passos atrasados sincronizam com os seus.\n\n"
+            "As três vidas acabam. A escuridão fecha. "
+            "Os passos atrasados sincronizam com os seus.\n\n"
             "Não há mais original nem cópia. Só um morador no ritmo da casa.\n\n"
-            "Você lembrou tarde demais."
-        ),
-        "options": [],
-    },
-    "fim_atrasado": {
-        "title": "FINAL — QUINZE",
-        "image": "/assets/imagens/fim_atrasado.jpg",
-        "stop_audio": True,
-        "text": (
-            "Quinze. A contagem acaba.\n\n"
-            "Você demorou demais para juntar as provas e chegar ao espelho. "
-            "A casa escolhe o eco: ele assume o seu passo.\n\n"
-            "Alguém com o seu rosto apaga a luz. Você fica atrasado para sempre."
+            "Você explorou até a casa te levar."
         ),
         "options": [],
     },
@@ -1171,14 +1129,14 @@ SCENES = {
 # ---------------------------------------------------------------------------
 
 def executar_acao(acao):
-    """Aplica a regra da ação escolhida. Não conta turno (isso é no bridge JS)."""
+    """Aplica a regra da ação escolhida. Contagem de ações fica no bridge JS."""
     flags = state["flags"]
 
     def conhece_casinha():
+        # Só pelo jardim ou pelo bilhete da mãe — o enigma não "ensina" o nome.
         return (
             flags["achou_pedra"]
             or flags["leu_pais"]
-            or flags["resolveu_enigma"]
             or possui_item("pedra do jardim")
         )
 
@@ -1411,7 +1369,7 @@ def executar_acao(acao):
         return
 
     if acao == "escolher_fuga":
-        if possui_item("chave enferrujada") or possui_item("fósforos"):
+        if possui_item("chave enferrujada"):
             _finalizar("fim_fuga", 20)
         else:
             _finalizar("fuga_falha")
@@ -1426,7 +1384,8 @@ def executar_acao(acao):
                 bonus += 10
             _finalizar("fim_verdade", bonus)
         else:
-            _finalizar("verdade_falha")
+            # Falha recuperável: não encerra a partida
+            mostrar_cena("verdade_falha")
         return
 
     if acao == "escolher_ritual":
@@ -1465,7 +1424,8 @@ def executar_acao(acao):
 def executar_acao_js(acao):
     """
     Entrada dos cliques (JavaScript → Python).
-    Conta 1 turno por escolha; aos 15 fora do espelho/final, a casa escolhe.
+    Conta ações só para ranking. Sem limite de tempo:
+    a partida acaba no final escolhido ou quando a vida chega a zero.
     """
     acao = str(acao).strip() if acao is not None else ""
     if not acao or acao == "None" or acao == "undefined":
@@ -1475,21 +1435,12 @@ def executar_acao_js(acao):
     if _eh_final(state.get("cena_atual")):
         return
 
-    # Não conta turno em reinícios internos sem clique — só cliques passam aqui
-    state["turnos"] += 1
+    state["acoes"] = state.get("acoes", 0) + 1
     atualizar_status()
 
     executar_acao(acao)
 
     cena = state.get("cena_atual")
-    # Aos 15 turnos ainda explorando (sem caminho ao espelho), a casa decide
-    if (
-        state["turnos"] >= CONFIG["max_turnos"]
-        and not _em_rota_do_espelho(cena)
-    ):
-        _finalizar("fim_atrasado")
-        return
-
     if not _eh_final(cena):
         salvar_jogo()
 
